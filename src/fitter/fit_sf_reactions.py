@@ -36,7 +36,7 @@ def main():
     if args.show_plot:
         import matplotlib.pyplot as plt
         plt.ion()
-        sf_fit.plot_data(args)
+        sf_fit.plot_data()
 
     if args.interact:
         import IPython; IPython.embed()

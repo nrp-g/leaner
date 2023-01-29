@@ -7,7 +7,7 @@ import fitter.plotting as plot
 class FitManager():
 
     def __init__(self,args):
-        self.x, self.y = ld.load_data(args.d_file, args.d_path, args.d_sets)
+        self.x, self.y, self.plot_struct = ld.load_data(args.d_file, args.d_path, args.d_sets)
 
-    def plot_data(self, args):
-        self.ax = plot.plot_data(self.x,self.y, args)
+    def plot_data(self):
+        self.ax = plot.plot_data(self.x,self.y, self.plot_struct)
