@@ -14,6 +14,9 @@ def main():
     parser.add_argument('--SF_reaction', type=str, default='S_12',
                         help=            'specify SF reaction [%(default)s]')
 
+    parser.add_argument('--fit_params',  default='input/fit_params.py',
+                        help=            'specify user input file [%(default)s]')
+
     parser.add_argument('--d_file',      default='data/solar_fusion_reacions.h5',
                         help=            'specify data file [%(default)s]')
 
@@ -33,6 +36,10 @@ def main():
     # start the fit manager
     sf_fit = FM.FitManager(args)
 
+    # perform fit over models
+
+
+    # plot data
     if args.show_plot:
         import matplotlib.pyplot as plt
         plt.ion()
