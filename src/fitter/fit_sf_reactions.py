@@ -37,13 +37,14 @@ def main():
     sf_fit = FM.FitManager(args)
 
     # perform fit over models
-
+    sf_fit.fit_models()
 
     # plot data
     if args.show_plot:
         import matplotlib.pyplot as plt
         plt.ion()
         sf_fit.plot_data()
+        sf_fit.plot_fit()
 
     if args.interact:
         import IPython; IPython.embed()

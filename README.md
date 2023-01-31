@@ -4,3 +4,6 @@ FitManager
   - init()
     * load data
   - plot_data
+
+- create fit functions
+- create fitter
