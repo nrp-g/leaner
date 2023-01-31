@@ -35,14 +35,38 @@ class FitManager():
                                     fcn   = model_fit.fit_func,
                                     )
 
-    def plot_fit(self):
+    def get_weights(self):
+        logGBF = {}
+        for model in self.fit_params['models']:
+            logGBF[model] = self.fit_results[model].logGBF
+        logGBF_max  = max([logGBF[k] for k in logGBF])
+        d_logGBF    = {k:logGBF[k]-logGBF_max for k in logGBF}
+        norm        = np.sum([np.exp(d_logGBF[k]) for k in logGBF])
+        self.weight = {k:np.exp(d_logGBF[k])/norm for k in logGBF}
+
+
+    def do_model_avg(self):
+        self.x_plot = {}
+        xi = self.fit_params['plot_params']['x_lim'][0]
+        xf = self.fit_params['plot_params']['x_lim'][1]
+        self.x_plot['plot'] = np.arange(xi, xf, xi/10)
+        self.get_weights()
+        self.model_avg = 0
         for model in self.fit_params['models']:
             model_fit = sf_fit.SFFunctions(model)
-            x = {}
-            xi = self.fit_params['plot_params']['x_lim'][0]
-            xf = self.fit_params['plot_params']['x_lim'][1]
-            x['plot'] = np.arange(xi, xf, xi/10)
-            result = model_fit.fit_func(x, self.fit_results[model].p)
-            yy = np.array([k.mean for k in result['plot']])
-            dy = np.array([k.sdev for k in result['plot']])
-            self.ax.fill_between(x['plot'], yy-dy, yy+dy, color='k', alpha=.3)
+            tmp = model_fit.fit_func(self.x_plot, self.fit_results[model].p)
+            self.model_avg += self.weight[model] * tmp['plot']
+
+
+    def plot_fit(self):
+        self.do_model_avg()
+        yy = np.array([k.mean for k in self.model_avg])
+        dy = np.array([k.sdev for k in self.model_avg])
+        self.ax.fill_between(self.x_plot['plot'], yy-dy, yy+dy, color='k', alpha=.3)
+
+    def report_fits(self):
+        for model in self.fit_params['models']:
+            print('-----------------------------------------------------------')
+            print(model)
+            print('-----------------------------------------------------------')
+            print(self.fit_results[model])

@@ -23,6 +23,9 @@ def main():
     parser.add_argument('--show_plot',   default=True, action='store_false',
                         help=            'show plots? [%(default)s]')
 
+    parser.add_argument('--report_fits', default=False, action='store_true',
+                        help=            'print results from each model [%(default)s]')
+
     parser.add_argument('--interact',    default=False, action='store_true',
                         help=            'open IPython instance after to interact with results? [%(default)s]')
 
@@ -38,6 +41,10 @@ def main():
 
     # perform fit over models
     sf_fit.fit_models()
+
+    # report fits
+    if args.report_fits:
+        sf_fit.report_fits()
 
     # plot data
     if args.show_plot:
