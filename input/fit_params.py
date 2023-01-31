@@ -1,4 +1,5 @@
 import gvar as gv
+import numpy as np
 
 fit_params = {
     'S_12':{# S_12 is also known as D(p,gamma)3-He
@@ -24,13 +25,22 @@ fit_params = {
                 'Warren_1963' :'g',
             },
         },
-        'models':['poly 2', 'poly 3', 'poly 4', 'poly 5'],
-        'priors':{
+        'models':['poly 2', 'poly 3', 'poly 4', 'poly 5', 'poly 6'],
+        'priors':gv.BufferDict({
             'S_0':gv.gvar(2e-7,1e-7),
-            'S_1':gv.gvar(0, 1),
-            'S_2':gv.gvar(0, 1),
-            'S_3':gv.gvar(0, 1),
-            'S_4':gv.gvar(0, 1),
-            'S_5':gv.gvar(0, 1)},
+            'S_1':gv.gvar(0, 1e-3),
+            'S_2':gv.gvar(0, 1e-3),
+            'S_3':gv.gvar(0, 1e-3),
+            'S_4':gv.gvar(0, 1e-3),
+            'S_5':gv.gvar(0, 1e-3),
+            'S_6':gv.gvar(0, 1e-3),
+            'log(f_Turkat_2021)' :gv.gvar(0.00, np.log(1.14)),
+            'log(f_Mossa_2020)'  :gv.gvar(0.00, np.log(1.027)),
+            'log(f_Tisma_2019)'  :gv.gvar(0.00, np.log(1.10)),
+            'log(f_Casella_2002)':gv.gvar(0.00, np.log(1.045)),
+            'log(f_Schmid_1997)' :gv.gvar(0.00, np.log(1.09)),
+            'log(f_Ma_1997)'     :gv.gvar(0.00, np.log(1.09)),
+            'log(f_Warren_1963)' :gv.gvar(0.00, np.log(1.10))
+            })
     }
 }

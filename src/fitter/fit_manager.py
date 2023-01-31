@@ -26,7 +26,7 @@ class FitManager():
     def fit_models(self):
         self.fit_results = {}
         for model in self.fit_params['models']:
-            model_fit = sf_fit.SFFunctions(model, norm=False)
+            model_fit = sf_fit.SFFunctions(model)
             p,p0 = model_fit.prune_priors(self.fit_params['priors'])
             self.fit_results[model] = lsqfit.nonlinear_fit(
                                     data  = (self.x, self.y),
