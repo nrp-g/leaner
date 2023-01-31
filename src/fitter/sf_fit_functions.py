@@ -2,9 +2,10 @@ import gvar as gv
 
 class SFFunctions():
 
-    def __init__(self, model):
+    def __init__(self, model, norm=True):
         self.model = model.split()[0]
         self.order = int(model.split()[-1])
+        self.norm  = norm
 
     def fit_func(self, x, p):
         # use the model name to determine the fit function to use
@@ -15,9 +16,13 @@ class SFFunctions():
         priors_pruned = {}
         p0            = {}
         for p in priors:
-            if int(p.split('_')[-1]) <= self.order:
+            if 'log' in p:
                 priors_pruned[p] = gv.gvar(priors[p].mean, priors[p].sdev)
                 p0[p]            = priors[p].mean
+            else:
+                if int(p.split('_')[-1]) <= self.order:
+                    priors_pruned[p] = gv.gvar(priors[p].mean, priors[p].sdev)
+                    p0[p]            = priors[p].mean
         return priors_pruned, p0
 
     def poly(self, x, p):
@@ -26,4 +31,6 @@ class SFFunctions():
             y[dset] = p['S_0']
             for n in range(1, self.order+1):
                 y[dset] += p['S_%d' %n] * x[dset]**n
+            if self.norm:
+                y[dset] = y[dset] / p['f_'+dset]
         return y
