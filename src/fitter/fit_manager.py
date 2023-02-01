@@ -14,6 +14,7 @@ class FitManager():
     def __init__(self,args):
         # load the data
         self.x, self.y  = ld.load_data(args.d_file, args.d_path, args.d_sets)
+        self.f_norm = args.f_norm
 
         # load the fit_params from user input file
         sys.path.append(os.path.dirname(os.path.abspath(args.fit_params)))
@@ -26,7 +27,7 @@ class FitManager():
     def fit_models(self):
         self.fit_results = {}
         for model in self.fit_params['models']:
-            model_fit = sf_fit.SFFunctions(model)
+            model_fit = sf_fit.SFFunctions(model, f_norm=self.f_norm)
             p,p0 = model_fit.prune_priors(self.fit_params['priors'])
             self.fit_results[model] = lsqfit.nonlinear_fit(
                                     data  = (self.x, self.y),
@@ -53,7 +54,7 @@ class FitManager():
         self.get_weights()
         self.model_avg = 0
         for model in self.fit_params['models']:
-            model_fit = sf_fit.SFFunctions(model, norm=False)
+            model_fit = sf_fit.SFFunctions(model, f_norm=False)
             tmp = model_fit.fit_func(self.x_plot, self.fit_results[model].p)
             self.model_avg += self.weight[model] * tmp['plot']
 

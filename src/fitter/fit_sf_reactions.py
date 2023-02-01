@@ -20,11 +20,15 @@ def main():
     parser.add_argument('--d_file',      default='data/solar_fusion_reacions.h5',
                         help=            'specify data file [%(default)s]')
 
-    parser.add_argument('--show_plot',   default=True, action='store_false',
-                        help=            'show plots? [%(default)s]')
+    parser.add_argument('--f_norm',      default=True, action='store_false',
+                        help=            'S -> f S where f is an normalization'
+                                         +'factor to be determined [%(default)s]')
 
     parser.add_argument('--report_fits', default=False, action='store_true',
                         help=            'print results from each model [%(default)s]')
+
+    parser.add_argument('--show_plot',   default=True, action='store_false',
+                        help=            'show plots? [%(default)s]')
 
     parser.add_argument('--interact',    default=False, action='store_true',
                         help=            'open IPython instance after to interact with results? [%(default)s]')

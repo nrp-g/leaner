@@ -2,10 +2,10 @@ import gvar as gv
 
 class SFFunctions():
 
-    def __init__(self, model, norm=True):
-        self.model = model.split()[0]
-        self.order = int(model.split()[-1])
-        self.norm  = norm
+    def __init__(self, model, f_norm=True):
+        self.model  = model.split()[0]
+        self.order  = int(model.split()[-1])
+        self.f_norm = f_norm
 
     def fit_func(self, x, p):
         # use the model name to determine the fit function to use
@@ -31,6 +31,6 @@ class SFFunctions():
             y[dset] = p['S_0']
             for n in range(1, self.order+1):
                 y[dset] += p['S_%d' %n] * x[dset]**n
-            if self.norm:
+            if self.f_norm:
                 y[dset] = y[dset] / p['f_'+dset]
         return y
