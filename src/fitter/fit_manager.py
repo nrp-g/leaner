@@ -53,16 +53,25 @@ class FitManager():
         self.x_plot['plot'] = np.arange(xi, xf, xi/10)
         self.get_weights()
         self.model_avg = 0
+        self.model_var = 0
         for model in self.fit_params['models']:
             model_fit = sf_fit.SFFunctions(model, f_norm=False)
             tmp = model_fit.fit_func(self.x_plot, self.fit_results[model].p)
-            self.model_avg += self.weight[model] * tmp['plot']
+            mean = np.array([k.mean for k in tmp['plot']])
+            sdev = np.array([k.sdev for k in tmp['plot']])
+
+            self.model_avg += gv.gvar(self.weight[model] * mean,
+                                      np.sqrt(self.weight[model]) * sdev)
+            self.model_var += self.weight[model] * mean**2
+        self.model_var += -np.array([k.mean**2 for k in self.model_avg])
 
 
     def plot_fit(self):
         self.do_model_avg()
-        yy = np.array([k.mean for k in self.model_avg])
-        dy = np.array([k.sdev for k in self.model_avg])
+        yy   = np.array([k.mean for k in self.model_avg])
+        var  = np.array([k.var  for k in self.model_avg])
+        var += self.model_var
+        dy   = np.sqrt(var)
         self.ax.fill_between(self.x_plot['plot'], yy-dy, yy+dy, color='k', alpha=.3)
 
     def report_fits(self):
