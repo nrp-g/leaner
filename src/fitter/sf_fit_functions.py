@@ -16,13 +16,14 @@ class SFFunctions():
         priors_pruned = {}
         p0            = {}
         for p in priors:
-            if 'log' in p:
-                priors_pruned[p] = gv.gvar(priors[p].mean, priors[p].sdev)
-                p0[p]            = priors[p].mean
-            else:
+            if 'log' not in p:
                 if int(p.split('_')[-1]) <= self.order:
                     priors_pruned[p] = gv.gvar(priors[p].mean, priors[p].sdev)
                     p0[p]            = priors[p].mean
+            elif 'log' in p and self.f_norm:
+                priors_pruned[p] = gv.gvar(priors[p].mean, priors[p].sdev)
+                p0[p]            = priors[p].mean
+
         return priors_pruned, p0
 
     def poly(self, x, p):

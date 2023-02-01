@@ -1,4 +1,4 @@
-import sys
+import sys, os
 import argparse
 try:
     import fitter.fit_manager as FM
@@ -23,6 +23,10 @@ def main():
     parser.add_argument('--f_norm',      default=True, action='store_false',
                         help=            'S -> f S where f is an normalization'
                                          +'factor to be determined [%(default)s]')
+
+    parser.add_argument('--extrinsic',   default=True, action='store_false',
+                        help=            'add extrinsic statistical uncertainty '
+                                         +'in analysis? [%(default)s]')
 
     parser.add_argument('--report_fits', default=False, action='store_true',
                         help=            'print results from each model [%(default)s]')
@@ -56,6 +60,12 @@ def main():
         plt.ion()
         sf_fit.plot_data()
         sf_fit.plot_fit()
+
+        if not os.path.exists('figures'):
+            os.makedirs('figures')
+        plt.savefig('figures/S_model_avg.pdf', transparent=True)
+
+        sf_fit.plot_pdf()
 
     if args.interact:
         import IPython; IPython.embed()

@@ -25,7 +25,7 @@ fit_params = {
                 'Warren_1963' :'g',
             },
         },
-        'models':['poly 2', 'poly 3', 'poly 4', 'poly 5', 'poly 6'],
+        'models':['poly 2', 'poly 3', 'poly 4', 'poly 5'],
         'priors':gv.BufferDict({
             'S_0':gv.gvar(2e-7,1e-7),
             'S_1':gv.gvar(0, 1e-3),

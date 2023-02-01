@@ -4,6 +4,8 @@ import os
 import numpy as np
 import gvar as gv
 import lsqfit
+import scipy.stats as stats
+import matplotlib.pyplot as plt
 
 import fitter.load_data as ld
 import fitter.plotting as plot
@@ -15,6 +17,7 @@ class FitManager():
         # load the data
         self.x, self.y  = ld.load_data(args.d_file, args.d_path, args.d_sets)
         self.f_norm = args.f_norm
+        self.args = args
 
         # load the fit_params from user input file
         sys.path.append(os.path.dirname(os.path.abspath(args.fit_params)))
@@ -24,17 +27,43 @@ class FitManager():
     def plot_data(self):
         self.ax = plot.plot_data(self.x, self.y, self.fit_params['plot_params'])
 
+    def fit_extrinsic_sig(self,z):
+        self.new_y = {}
+        for k in z:
+            dy = np.array([d.mean for d in self.y[k]]) * z[k]
+            self.new_y[k] = self.y[k] * gv.gvar(np.ones_like(dy), dy)
+        fit_dict = {
+            'data' : (self.x, self.new_y),
+            'fcn'  : self.tmp_model_fit.fit_func,
+            'p0'   : self.tmp_p0,
+            'prior': self.tmp_p
+        }
+        for k in z:
+            if z[k] < 0 or z[k] > 1:
+                print(k,z[k])
+                plausibility = -1e6
+            else:
+                plausibility = 0.
+        return (fit_dict, plausibility)
+
     def fit_models(self):
         self.fit_results = {}
         for model in self.fit_params['models']:
-            model_fit = sf_fit.SFFunctions(model, f_norm=self.f_norm)
-            p,p0 = model_fit.prune_priors(self.fit_params['priors'])
+            self.tmp_model_fit = sf_fit.SFFunctions(model, f_norm=self.f_norm)
+            self.tmp_p,self.tmp_p0 = self.tmp_model_fit.prune_priors(self.fit_params['priors'])
+            if self.args.extrinsic:
+                print(model, 'extrinsic hunt')
+                ffit,z = lsqfit.empbayes_fit({'Turkat_2021':0.1, 'Mossa_2020':0.1,
+                            'Tisma_2019':0.1, 'Casella_2002':0.1, 'Schmid_1997':0.1,
+                            'Ma_1997':0.1,'Warren_1963':0.1}, self.fit_extrinsic_sig)
+                print(z)
+                print(ffit)
             self.fit_results[model] = lsqfit.nonlinear_fit(
-                                    data  = (self.x, self.y),
-                                    prior = p,
-                                    p0    = p0,
-                                    fcn   = model_fit.fit_func,
-                                    )
+                                        data  = (self.x, self.y),
+                                        prior = self.tmp_p,
+                                        p0    = self.tmp_p0,
+                                        fcn   = self.tmp_model_fit.fit_func,
+                                        )
 
     def get_weights(self):
         logGBF = {}
@@ -80,3 +109,26 @@ class FitManager():
             print(model)
             print('-----------------------------------------------------------')
             print(self.fit_results[model])
+
+    def plot_pdf(self):
+        pdf = 0.
+        cdf = 0.
+        pdf_x = np.arange(1.5e-7,2.4e-7,1e-9)
+        self.get_weights()
+        for model in self.fit_params['models']:
+            w_i = self.weight[model]
+            S_0 = self.fit_results[model].p['S_0']
+            p   = stats.norm.pdf(pdf_x, S_0.mean, S_0.sdev)
+            pdf += w_i * p
+            cdf += w_i * stats.norm.cdf(pdf_x, S_0.mean, S_0.sdev)
+        self.pdf = pdf
+        self.cdf = cdf
+        hist = plt.figure('hist')
+        ax   = plt.axes([0.12, 0.12, 0.85, 0.85])
+        ax.plot(pdf_x, self.pdf, color='k')
+        ax.fill_between(x=pdf_x, y1=self.pdf, color='k', alpha=.2)
+        ax.set_xlabel(r'$S_0$[MeV b]', fontsize=16)
+        ax.set_ylabel(r'likelihood', fontsize=16)
+        if not os.path.exists('figures'):
+            os.makedirs('figures')
+        plt.savefig('figures/S_0_hist.pdf',transparent=True)
