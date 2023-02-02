@@ -29,21 +29,21 @@ class FitManager():
 
     def fit_extrinsic_sig(self,z):
         self.new_y = {}
+        plausibility = 0
+        xcutoff = 1.
         for k in z:
-            dy = np.array([d.mean for d in self.y[k]]) * z[k]
-            self.new_y[k] = self.y[k] * gv.gvar(np.ones_like(dy), dy)
+            #dy = gv.mean(self.y[k]) * z[k]**2
+            dy = z[k]**2
+            #np.array([d.mean for d in self.y[k]]) * z[k]
+            self.new_y[k] = self.y[k] + gv.gvar(np.zeros_like(dy), dy)
+            plausibility -= z[k]**2 / (2*xcutoff)
         fit_dict = {
             'data' : (self.x, self.new_y),
             'fcn'  : self.tmp_model_fit.fit_func,
             'p0'   : self.tmp_p0,
             'prior': self.tmp_p
         }
-        for k in z:
-            if z[k] < 0 or z[k] > 1:
-                print(k,z[k])
-                plausibility = -1e6
-            else:
-                plausibility = 0.
+
         return (fit_dict, plausibility)
 
     def fit_models(self):
@@ -57,13 +57,14 @@ class FitManager():
                             'Tisma_2019':0.1, 'Casella_2002':0.1, 'Schmid_1997':0.1,
                             'Ma_1997':0.1,'Warren_1963':0.1}, self.fit_extrinsic_sig)
                 print(z)
-                print(ffit)
-            self.fit_results[model] = lsqfit.nonlinear_fit(
-                                        data  = (self.x, self.y),
-                                        prior = self.tmp_p,
-                                        p0    = self.tmp_p0,
-                                        fcn   = self.tmp_model_fit.fit_func,
-                                        )
+                self.fit_results[model] = ffit
+            else:
+                self.fit_results[model] = lsqfit.nonlinear_fit(
+                                            data  = (self.x, self.y),
+                                            prior = self.tmp_p,
+                                            p0    = self.tmp_p0,
+                                            fcn   = self.tmp_model_fit.fit_func,
+                                            )
 
     def get_weights(self):
         logGBF = {}
