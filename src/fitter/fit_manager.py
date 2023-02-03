@@ -31,9 +31,11 @@ class FitManager():
         self.new_y = {}
         plausibility = 0
         xcutoff = 1.
+        #xcutoff = 10.
         for k in z:
             #dy = gv.mean(self.y[k]) * z[k]**2
-            dy = z[k]**2
+            dy = xcutoff * np.arctan(z[k]**2 / xcutoff) * gv.mean(self.y[k])
+            #dy = z[k]**2
             #np.array([d.mean for d in self.y[k]]) * z[k]
             self.new_y[k] = self.y[k] + gv.gvar(np.zeros_like(dy), dy)
             plausibility -= z[k]**2 / (2*xcutoff)
@@ -43,8 +45,8 @@ class FitManager():
             'p0'   : self.tmp_p0,
             'prior': self.tmp_p
         }
-
-        return (fit_dict, plausibility)
+        return fit_dict
+        #return (fit_dict, plausibility)
 
     def fit_models(self):
         self.fit_results = {}
