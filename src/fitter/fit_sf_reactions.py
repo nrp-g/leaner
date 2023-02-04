@@ -19,6 +19,8 @@ def main():
 
     parser.add_argument('--d_file',      default='data/solar_fusion_reacions.h5',
                         help=            'specify data file [%(default)s]')
+    parser.add_argument('--d_sets',      nargs='+',
+                        help=            'user can specify d_set list to override input file')
 
     parser.add_argument('--f_norm',      default=True, action='store_false',
                         help=            'S -> f S where f is an normalization'
@@ -41,7 +43,7 @@ def main():
     print(args)
 
     # populate the args with essential info
-    args.d_sets = []
+    #args.d_sets = []
     args.d_path = args.SF_reaction
 
     # start the fit manager

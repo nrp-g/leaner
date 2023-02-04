@@ -3,7 +3,7 @@ import numpy as np
 
 fit_params = {
     'S_12':{# S_12 is also known as D(p,gamma)3-He
-        'dsets'     :['Casella_2002', 'Ma_1997', 'Mossa_2020', 'Schmid_1997',
+        'dsets'      :['Casella_2002', 'Ma_1997', 'Mossa_2020', 'Schmid_1997',
                       'Tisma_2019', 'Turkat_2021', 'Warren_1963'],
         'plot_params':{
             'x_lim'     :(0.00065, 2.5),
@@ -26,14 +26,15 @@ fit_params = {
             },
         },
         'models':['poly 2', 'poly 3', 'poly 4', 'poly 5'],
+        #'models':['poly 3', 'poly 4', 'poly 5'],
         'priors':gv.BufferDict({
             'S_0':gv.gvar(2e-7,1e-7),
-            'S_1':gv.gvar(0, 1e-3),
-            'S_2':gv.gvar(0, 1e-3),
-            'S_3':gv.gvar(0, 1e-3),
-            'S_4':gv.gvar(0, 1e-3),
-            'S_5':gv.gvar(0, 1e-3),
-            'S_6':gv.gvar(0, 1e-3),
+            'S_1':gv.gvar(0, 1e-0),
+            'S_2':gv.gvar(0, 1e-0),
+            'S_3':gv.gvar(0, 1e-0),
+            'S_4':gv.gvar(0, 1e-0),
+            'S_5':gv.gvar(0, 1e-0),
+            'S_6':gv.gvar(0, 1e-0),
             'log(f_Turkat_2021)' :gv.gvar(0.00, np.log(1.14)),
             'log(f_Mossa_2020)'  :gv.gvar(0.00, np.log(1.027)),
             'log(f_Tisma_2019)'  :gv.gvar(0.00, np.log(1.10)),
@@ -41,6 +42,9 @@ fit_params = {
             'log(f_Schmid_1997)' :gv.gvar(0.00, np.log(1.09)),
             'log(f_Ma_1997)'     :gv.gvar(0.00, np.log(1.09)),
             'log(f_Warren_1963)' :gv.gvar(0.00, np.log(1.10))
-            })
+            }),
+        'z0'    :{'Turkat_2021':0.1, 'Mossa_2020':0.1,
+                    'Tisma_2019':0.1, 'Casella_2002':0.1, 'Schmid_1997':0.1,
+                    'Ma_1997':0.1,'Warren_1963':0.1}
     }
 }

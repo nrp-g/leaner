@@ -11,7 +11,7 @@ class SFFunctions():
         # use the model name to determine the fit function to use
         return getattr(self, self.model)(x, p)
 
-    def prune_priors(self, priors):
+    def prune_priors(self, priors, dsets):
         # prune the priors so we only use ones that are used
         priors_pruned = {}
         p0            = {}
@@ -21,8 +21,9 @@ class SFFunctions():
                     priors_pruned[p] = gv.gvar(priors[p].mean, priors[p].sdev)
                     p0[p]            = priors[p].mean
             elif 'log' in p and self.f_norm:
-                priors_pruned[p] = gv.gvar(priors[p].mean, priors[p].sdev)
-                p0[p]            = priors[p].mean
+                if any(k in p for k in dsets):
+                    priors_pruned[p] = gv.gvar(priors[p].mean, priors[p].sdev)
+                    p0[p]            = priors[p].mean
 
         return priors_pruned, p0
 

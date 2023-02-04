@@ -14,15 +14,20 @@ import fitter.sf_fit_functions as sf_fit
 class FitManager():
 
     def __init__(self,args):
-        # load the data
-        self.x, self.y  = ld.load_data(args.d_file, args.d_path, args.d_sets)
-        self.f_norm = args.f_norm
-        self.args = args
-
         # load the fit_params from user input file
         sys.path.append(os.path.dirname(os.path.abspath(args.fit_params)))
         fp = importlib.import_module(args.fit_params.split('/')[-1].split('.py')[0])
         self.fit_params = fp.fit_params[args.SF_reaction]
+
+        # load the data
+        if args.d_sets:
+            dsets = args.d_sets
+        else:
+            dsets = self.fit_params['dsets']
+        self.x, self.y  = ld.load_data(args.d_file, args.d_path, dsets)
+        self.f_norm = args.f_norm
+        self.args = args
+
 
     def plot_data(self):
         self.ax = plot.plot_data(self.x, self.y, self.fit_params['plot_params'])
@@ -52,12 +57,11 @@ class FitManager():
         self.fit_results = {}
         for model in self.fit_params['models']:
             self.tmp_model_fit = sf_fit.SFFunctions(model, f_norm=self.f_norm)
-            self.tmp_p,self.tmp_p0 = self.tmp_model_fit.prune_priors(self.fit_params['priors'])
+            self.tmp_p,self.tmp_p0 = self.tmp_model_fit.prune_priors(self.fit_params['priors'],self.y)
+            z0 = {k:v for k,v in self.fit_params['z0'].items() if k in self.y}
             if self.args.extrinsic:
                 print(model, 'extrinsic hunt')
-                ffit,z = lsqfit.empbayes_fit({'Turkat_2021':0.1, 'Mossa_2020':0.1,
-                            'Tisma_2019':0.1, 'Casella_2002':0.1, 'Schmid_1997':0.1,
-                            'Ma_1997':0.1,'Warren_1963':0.1}, self.fit_extrinsic_sig)
+                ffit,z = lsqfit.empbayes_fit(z0, self.fit_extrinsic_sig)
                 print(z)
                 self.fit_results[model] = ffit
             else:
@@ -116,7 +120,7 @@ class FitManager():
     def plot_pdf(self):
         pdf = 0.
         cdf = 0.
-        pdf_x = np.arange(1.5e-7,2.4e-7,1e-9)
+        pdf_x = np.arange(1.1e-7,3.0e-7,1e-9)
         self.get_weights()
         for model in self.fit_params['models']:
             w_i = self.weight[model]
