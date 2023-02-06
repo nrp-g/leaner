@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 def plot_data(x,y, plot_params):
     plt.figure(figsize=(7,4))
-    ax = plt.axes([0.12,0.12,0.86,0.86])
+    ax = plt.axes([0.13,0.13,0.85,0.85])
 
     for dset in x:
         y_m = [k.mean for k in y[dset]]
