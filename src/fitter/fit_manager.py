@@ -183,11 +183,13 @@ class FitManager():
         cdf = 0.
         pdf_x = np.arange(1.1e-7,3.0e-7,1e-9)
         self.get_weights()
+        self.pdf_model = {}
         for model in self.fit_params['models']:
             w_i = self.weight[model]
             S_0 = self.fit_results[model].p['S_0']
             p   = stats.norm.pdf(pdf_x, S_0.mean, S_0.sdev)
             pdf += w_i * p
+            self.pdf_model[model] = w_i * p
             cdf += w_i * stats.norm.cdf(pdf_x, S_0.mean, S_0.sdev)
         self.pdf = pdf
         self.cdf = cdf
@@ -195,8 +197,11 @@ class FitManager():
         ax   = plt.axes([0.12, 0.12, 0.85, 0.85])
         ax.plot(pdf_x, self.pdf, color='k')
         ax.fill_between(x=pdf_x, y1=self.pdf, color='k', alpha=.2)
-        ax.set_xlabel(r'$S_0$[MeV b]', fontsize=16)
-        ax.set_ylabel(r'likelihood', fontsize=16)
+        for model in self.fit_params['models']:
+            ax.fill_between(pdf_x, self.pdf_model[model], alpha=.4, label=model)
+        ax.set_xlabel(r'$dS_0$[MeV b]', fontsize=16)
+        ax.set_ylabel(r'$d\mathcal{P}$', fontsize=16)
+        ax.legend()
         if not os.path.exists('figures'):
             os.makedirs('figures')
         plt.savefig('figures/S_0_hist.pdf',transparent=True)
