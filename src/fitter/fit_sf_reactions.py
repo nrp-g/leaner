@@ -30,8 +30,16 @@ def main():
                         help=            'add extrinsic statistical uncertainty '
                                          +'in analysis? [%(default)s]')
 
+    parser.add_argument('--run_analysis',default=True, action='store_false',
+                        help=            'run Bayes Model Analysis? [%(default)s]')
     parser.add_argument('--report_fits', default=False, action='store_true',
                         help=            'print results from each model [%(default)s]')
+
+    parser.add_argument('--prior_width', nargs='+', type=str,
+                        help=            'list priors to simultaneously perform a width study')
+    parser.add_argument('--prior_range', nargs='+', type=float,
+                        help=            'min, max, ds: to be used as np.arange(min,max+dm,dm) '
+                                         +'to be used for prior_width study')
 
     parser.add_argument('--show_plot',   default=True, action='store_false',
                         help=            'show plots? [%(default)s]')
@@ -42,39 +50,52 @@ def main():
     args = parser.parse_args()
     print(args)
 
+    # check for problems
+    # turn this into a function that checks everything
+    if (args.prior_width and not args.prior_range) or (not args.prior_width and args.prior_range):
+        sys.exit('you must specify BOTH prior_width and prior_range to perform prior_width study')
+
     # populate the args with essential info
     #args.d_sets = []
     args.d_path = args.SF_reaction
 
-    # start the fit manager
-    sf_fit = FM.FitManager(args)
-
-    # perform fit over models
-    sf_fit.fit_models()
-
-    # report fits
-    if args.report_fits:
-        sf_fit.report_fits()
-
-    # plot data
     if args.show_plot:
         import matplotlib.pyplot as plt
         plt.ion()
-        sf_fit.plot_data()
-        sf_fit.plot_fit()
 
-        if not os.path.exists('figures'):
-            os.makedirs('figures')
-        plt.savefig('figures/S_model_avg.pdf', transparent=True)
+    # start the fit manager
+    sf_fit = FM.FitManager(args)
 
-        sf_fit.plot_pdf()
+    # perform prior_width study
+    if args.prior_width:
+        sf_fit.prior_width()
 
-    if args.interact:
-        import IPython; IPython.embed()
+    if args.run_analysis:
+        # perform fit over models
+        sf_fit.fit_models()
+
+        # report fits
+        if args.report_fits:
+            sf_fit.report_fits()
+
+        # plot data
+        if args.show_plot:
+            sf_fit.plot_data()
+            sf_fit.plot_fit()
+
+            if not os.path.exists('figures'):
+                os.makedirs('figures')
+            plt.savefig('figures/S_model_avg.pdf', transparent=True)
+
+            sf_fit.plot_pdf()
 
     if args.show_plot:
         plt.ioff()
         plt.show()
+
+    if args.interact:
+        import IPython; IPython.embed()
+
 
 if __name__ == "__main__":
     main()

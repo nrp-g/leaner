@@ -6,6 +6,7 @@ import gvar as gv
 import lsqfit
 import scipy.stats as stats
 import matplotlib.pyplot as plt
+from glob import glob
 
 import fitter.load_data as ld
 import fitter.plotting as plot
@@ -38,10 +39,9 @@ class FitManager():
         xcutoff = 1.
         #xcutoff = 10.
         for k in z:
-            #dy = gv.mean(self.y[k]) * z[k]**2
-            dy = xcutoff * np.arctan(z[k]**2 / xcutoff) * gv.mean(self.y[k])
-            #dy = z[k]**2
-            #np.array([d.mean for d in self.y[k]]) * z[k]
+            dy = gv.mean(self.y[k]) * z[k]**2
+            #dy = xcutoff * np.arctan(z[k]**2 / xcutoff)
+            #dy = xcutoff * np.arctan(z[k]**2 / xcutoff) * gv.mean(self.y[k])
             self.new_y[k] = self.y[k] + gv.gvar(np.zeros_like(dy), dy)
             plausibility -= z[k]**2 / (2*xcutoff)
         fit_dict = {
@@ -57,10 +57,11 @@ class FitManager():
         self.fit_results = {}
         for model in self.fit_params['models']:
             self.tmp_model_fit = sf_fit.SFFunctions(model, f_norm=self.f_norm)
-            self.tmp_p,self.tmp_p0 = self.tmp_model_fit.prune_priors(self.fit_params['priors'],self.y)
-            z0 = {k:v for k,v in self.fit_params['z0'].items() if k in self.y}
+            self.tmp_p, self.tmp_p0 = self.tmp_model_fit.prune_priors(self.fit_params['priors'],self.y)
+
             if self.args.extrinsic:
                 print(model, 'extrinsic hunt')
+                z0 = {k:v for k,v in self.fit_params['z0'].items() if k in self.y}
                 ffit,z = lsqfit.empbayes_fit(z0, self.fit_extrinsic_sig)
                 print(z)
                 self.fit_results[model] = ffit
@@ -71,6 +72,66 @@ class FitManager():
                                             p0    = self.tmp_p0,
                                             fcn   = self.tmp_model_fit.fit_func,
                                             )
+
+    def prior_width(self):
+        self.prior_width_results = {}
+        for model in self.fit_params['models']:
+            self.tmp_model_fit = sf_fit.SFFunctions(model, f_norm=self.f_norm)
+            self.tmp_p, self.tmp_p0 = self.tmp_model_fit.prune_priors(self.fit_params['priors'],self.y)
+            pi, pf, dp = self.args.prior_range
+            for sp in np.arange(pi, pf+dp, dp):
+                model_save = model.replace(' ','_')
+                for p in self.tmp_p:
+                    if p in self.args.prior_width:
+                        self.tmp_p[p] = gv.gvar(self.tmp_p[p].mean, sp)
+                        model_save += '_'+p
+                model_save += '_dS_%.2e' %(sp)
+                print(model_save)
+                if not os.path.exists('pickled_fits'):
+                    os.makedirs('pickled_fits')
+                if not os.path.exists('pickled_fits/'+model_save+'.p'):
+                    if self.args.extrinsic:
+                        z0 = {k:v for k,v in self.fit_params['z0'].items() if k in self.y}
+                        ffit,z = lsqfit.empbayes_fit(z0, self.fit_extrinsic_sig)
+                        self.prior_width_results[model_save] = ffit
+                    else:
+                        self.prior_width_results[model_save] = lsqfit.nonlinear_fit(
+                                                    data  = (self.x, self.y),
+                                                    prior = self.tmp_p,
+                                                    p0    = self.tmp_p0,
+                                                    fcn   = self.tmp_model_fit.fit_func,
+                                                    )
+                    gv.dump(self.prior_width_results[model_save], 'pickled_fits/'+model_save+'.p', add_dependencies=True)
+                else:
+                    print(model_save+' already exists - load fit')
+                    self.prior_width_results[model_save] = gv.load('pickled_fits/'+model_save+'.p')
+
+            fit_search = model_save.split('_dS')[0]
+            all_fits   = glob('pickled_fits/'+fit_search+'*.p')
+            for fit_result in all_fits:
+                fit = fit_result.split('/')[-1].split('.p')[0]
+                if fit not in self.prior_width_results:
+                    self.prior_width_results[fit] = gv.load(fit_result)
+            logGBF = {}
+            ds = {}
+            for fit in self.prior_width_results:
+                logGBF[fit] = self.prior_width_results[fit].logGBF
+                ds[fit]     = float(fit.split('dS_')[-1])
+            logGBF_max = max([logGBF[k] for k in logGBF])
+            d_logGBF   = {k:logGBF[k]-logGBF_max for k in logGBF}
+            norm       = np.sum([np.exp(d_logGBF[k]) for k in logGBF])
+            weight     = {k:np.exp(d_logGBF[k])/norm for k in logGBF}
+            fits       = [fit for fit in weight]
+            x          = np.array([ds[fit] for fit in fits])
+            i_x        = np.argsort(x)
+            w          = np.array([weight[fit] for fit in fits])
+            plt.figure(model+' prior width')
+            ax = plt.axes([.12, .12, .87, .87])
+            ax.plot(x[i_x],w[i_x],marker='s')
+            ax.text(.05, .9, model, transform=ax.transAxes,fontsize=20)
+            ax.set_xlabel(r'$\tilde{\sigma}$', fontsize=16)
+            ax.set_ylabel('relative weight', fontsize=16)
+            plt.savefig('figures/'+model+'_prior_width_study.pdf', transparent=True)
 
     def get_weights(self):
         logGBF = {}
