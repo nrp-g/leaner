@@ -78,6 +78,9 @@ def main():
         if args.report_fits:
             sf_fit.report_fits()
 
+        sf_fit.model_avg_S(0.0,   plot_hist=True)
+        sf_fit.model_avg_S(0.091, plot_hist=True)
+
         # plot data
         if args.show_plot:
             sf_fit.plot_data()
@@ -87,7 +90,7 @@ def main():
                 os.makedirs('figures')
             plt.savefig('figures/S_model_avg.pdf', transparent=True)
 
-            sf_fit.plot_pdf()
+            #sf_fit.plot_pdf()
 
     if args.show_plot:
         plt.ioff()

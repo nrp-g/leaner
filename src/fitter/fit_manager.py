@@ -39,9 +39,9 @@ class FitManager():
         xcutoff = 1.
         #xcutoff = 10.
         for k in z:
-            dy = gv.mean(self.y[k]) * z[k]**2
+            #dy = gv.mean(self.y[k]) * z[k]**2
             #dy = xcutoff * np.arctan(z[k]**2 / xcutoff)
-            #dy = xcutoff * np.arctan(z[k]**2 / xcutoff) * gv.mean(self.y[k])
+            dy = xcutoff * np.arctan(z[k]**2 / xcutoff) * gv.mean(self.y[k])
             self.new_y[k] = self.y[k] + gv.gvar(np.zeros_like(dy), dy)
             plausibility -= z[k]**2 / (2*xcutoff)
         fit_dict = {
@@ -162,6 +162,56 @@ class FitManager():
             self.model_var += self.weight[model] * mean**2
         self.model_var += -np.array([k.mean**2 for k in self.model_avg])
 
+
+    def model_avg_S(self,E,plot_hist=False):
+        self.get_weights()
+        E_result = {}
+        E_result['eval'] = np.array([E])
+        mean = 0
+        var  = 0
+        for model in self.fit_params['models']:
+            model_fit = sf_fit.SFFunctions(model, f_norm=False)
+            tmp   = model_fit.fit_func(E_result, self.fit_results[model].p)
+            t_m   = np.array([k.mean for k in tmp['eval']])
+            t_s   = np.array([k.sdev for k in tmp['eval']])
+            mean += gv.gvar(self.weight[model] * t_m, np.sqrt(self.weight[model]) * t_s)
+            var  += self.weight[model] * t_m**2
+        var += -np.array([k.mean**2 for k in mean])
+        total_var = mean[0].var + var
+        print('S(%f) = %s +- %.1e' %(E,mean[0],np.sqrt(var)[0]))
+
+        if plot_hist:
+            pdf = 0.
+            cdf = 0.
+            pdf_x = np.arange(mean[0].mean-10*np.sqrt(total_var), 
+                              mean[0].mean+10*np.sqrt(total_var),
+                              np.sqrt(total_var)/33)
+            self.pdf_model = {}
+            for model in self.fit_params['models']:
+                w_i       = self.weight[model]
+                model_fit = sf_fit.SFFunctions(model, f_norm=False)
+                S_model   = model_fit.fit_func(E_result, self.fit_results[model].p)
+                p         = stats.norm.pdf(pdf_x, S_model['eval'][0].mean, S_model['eval'][0].sdev)
+                pdf      += w_i * p
+                self.pdf_model[model] = w_i * p
+                cdf      += w_i * stats.norm.cdf(pdf_x, S_model['eval'][0].mean, S_model['eval'][0].sdev)
+            if 'pdf' not in dir(self):
+                self.pdf = {}
+                self.cdf = {}
+            self.pdf[E] = pdf
+            self.cdf[E] = cdf
+            hist = plt.figure('hist E=%f' %E)
+            ax   = plt.axes([0.12, 0.12, 0.85, 0.85])
+            ax.plot(pdf_x, self.pdf[E], color='k')
+            ax.fill_between(x=pdf_x, y1=self.pdf[E], color='k', alpha=.2)
+            for model in self.fit_params['models']:
+                ax.fill_between(pdf_x, self.pdf_model[model], alpha=.4, label=model)
+            ax.set_xlabel(r'$dS(E=%.4f)$[MeV b]' %(E), fontsize=16)
+            ax.set_ylabel(r'$d\mathcal{P}$', fontsize=16)
+            ax.legend()
+            if not os.path.exists('figures'):
+                os.makedirs('figures')
+            plt.savefig('figures/S_E%.4f_hist.pdf' %(E),transparent=True)
 
     def plot_fit(self):
         self.do_model_avg()
