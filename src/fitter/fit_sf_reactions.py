@@ -26,12 +26,14 @@ def main():
                         help=            'S -> f S where f is an normalization'
                                          +'factor to be determined [%(default)s]')
 
-    parser.add_argument('--extrinsic',   default=True, action='store_false',
-                        help=            'add extrinsic statistical uncertainty '
-                                         +'in analysis? [%(default)s]')
+    parser.add_argument('--extrinsic',   nargs='+', default=['rel'],
+                        help=            'list of extrinsic statistical uncertainty models'
+                                         +"in analysis, options are rel, abs and '' [%(default)s]")
 
     parser.add_argument('--run_analysis',default=True, action='store_false',
                         help=            'run Bayes Model Analysis? [%(default)s]')
+    parser.add_argument('--redo_fits',   default=False, action='store_true',
+                        help=            'redo fits even if saved? [%(default)s]')
     parser.add_argument('--report_fits', default=False, action='store_true',
                         help=            'print results from each model [%(default)s]')
 
@@ -77,6 +79,8 @@ def main():
         # report fits
         if args.report_fits:
             sf_fit.report_fits()
+
+        sf_fit.report_models()
 
         sf_fit.model_avg_S(0.0,   plot_hist=True)
         sf_fit.model_avg_S(0.091, plot_hist=True)
