@@ -3,8 +3,8 @@ import gvar as gv
 class SFFunctions():
 
     def __init__(self, model, f_norm=True):
-        self.model  = model.split()[0]
-        self.order  = int(model.split()[-1])
+        self.model  = model.split('_')[0]
+        self.order  = int(model.split('_')[-1])
         self.f_norm = f_norm
 
     def fit_func(self, x, p):
@@ -34,5 +34,5 @@ class SFFunctions():
             for n in range(1, self.order+1):
                 y[dset] += p['S_%d' %n] * x[dset]**n
             if self.f_norm:
-                y[dset] = y[dset] / p['f_'+dset]
+                y[dset] = y[dset] * p['f_'+dset]
         return y

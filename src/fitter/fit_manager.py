@@ -59,19 +59,30 @@ class FitManager():
             self.tmp_model_fit = sf_fit.SFFunctions(model, f_norm=self.f_norm)
             self.tmp_p, self.tmp_p0 = self.tmp_model_fit.prune_priors(self.fit_params['priors'],self.y)
 
+            # if the fit is saved, load it, otherwise, do the analysis
+            saved_fit = 'pickled_fits/'+self.args.SF_reaction+'_'+model
             if self.args.extrinsic:
-                print(model, 'extrinsic hunt')
-                z0 = {k:v for k,v in self.fit_params['z0'].items() if k in self.y}
-                ffit,z = lsqfit.empbayes_fit(z0, self.fit_extrinsic_sig)
-                print(z)
-                self.fit_results[model] = ffit
+                saved_fit += '_extrinsic_rel.p'
             else:
-                self.fit_results[model] = lsqfit.nonlinear_fit(
-                                            data  = (self.x, self.y),
-                                            prior = self.tmp_p,
-                                            p0    = self.tmp_p0,
-                                            fcn   = self.tmp_model_fit.fit_func,
-                                            )
+                saved_fit += '_extrinsic_none.p'
+            if os.path.exists(saved_fit):
+                print('fit already performed - loading')
+                self.fit_results[model] = gv.load(saved_fit)
+            else:
+                if self.args.extrinsic:
+                    print(model, 'extrinsic hunt')
+                    z0 = {k:v for k,v in self.fit_params['z0'].items() if k in self.y}
+                    ffit,z = lsqfit.empbayes_fit(z0, self.fit_extrinsic_sig)
+                    print(z)
+                    self.fit_results[model] = ffit
+                else:
+                    self.fit_results[model] = lsqfit.nonlinear_fit(
+                                                data  = (self.x, self.y),
+                                                prior = self.tmp_p,
+                                                p0    = self.tmp_p0,
+                                                fcn   = self.tmp_model_fit.fit_func,
+                                                )
+                gv.dump(self.fit_results[model], saved_fit, add_dependencies=True)
 
     def prior_width(self):
         self.prior_width_results = {}
