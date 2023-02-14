@@ -11,43 +11,47 @@ except:
 def main():
     parser = argparse.ArgumentParser(
         description='Perform Bayes analysis of nuclear reaction data S-factors')
-    parser.add_argument('--SF_reaction', type=str, default='S_12',
-                        help=            'specify SF reaction [%(default)s]')
+    parser.add_argument('--SF_reaction',    type=str, default='S_12',
+                        help=               'specify SF reaction [%(default)s]'  )
+  
+    parser.add_argument('--fit_params',     default='input/fit_params.py',
+                        help=               'specify user input file [%(default)s]')
 
-    parser.add_argument('--fit_params',  default='input/fit_params.py',
-                        help=            'specify user input file [%(default)s]')
+    parser.add_argument('--d_file',         default='data/solar_fusion_reacions.h5',
+                        help=               'specify data file [%(default)s]')
+    parser.add_argument('--d_sets',         nargs='+',
+                        help=               'user can specify d_set list to override input file')
 
-    parser.add_argument('--d_file',      default='data/solar_fusion_reacions.h5',
-                        help=            'specify data file [%(default)s]')
-    parser.add_argument('--d_sets',      nargs='+',
-                        help=            'user can specify d_set list to override input file')
+    parser.add_argument('--models',         nargs='+', help='overide models in input file with this list')
+    parser.add_argument('--f_norm',         default=True, action='store_false',
+                        help=               'S -> f S where f is an normalization'
+                                            +'factor to be determined [%(default)s]')
+    parser.add_argument('--extrinsic',      nargs='+', default=['rel'],
+                        help=               'list of extrinsic statistical uncertainty models'
+                                            +"in analysis, options are rel, abs and '' [%(default)s]")
+    parser.add_argument('--offset',         default=True, action='store_false',
+                        help=               'for pheno fit, add offset parameter? [%(default)s]')
 
-    parser.add_argument('--f_norm',      default=True, action='store_false',
-                        help=            'S -> f S where f is an normalization'
-                                         +'factor to be determined [%(default)s]')
+    parser.add_argument('--run_analysis',   default=True, action='store_false',
+                        help=               'run Bayes Model Analysis? [%(default)s]')
+    parser.add_argument('--redo_fits',      default=False, action='store_true',
+                        help=               'redo fits even if saved? [%(default)s]')
+    parser.add_argument('--report_fits',    default=False, action='store_true',
+                        help=               'print results from each model [%(default)s]')
+    parser.add_argument('--report_models',  default=True, action='store_true',
+                        help=               'report model weights? [%(default)s]')
 
-    parser.add_argument('--extrinsic',   nargs='+', default=['rel'],
-                        help=            'list of extrinsic statistical uncertainty models'
-                                         +"in analysis, options are rel, abs and '' [%(default)s]")
+    parser.add_argument('--prior_width',    nargs='+', type=str,
+                        help=               'list priors to simultaneously perform a width study')
+    parser.add_argument('--prior_range',    nargs='+', type=float,
+                        help=               'min, max, ds: to be used as np.arange(min,max+dm,dm) '
+                                            +'to be used for prior_width study')
 
-    parser.add_argument('--run_analysis',default=True, action='store_false',
-                        help=            'run Bayes Model Analysis? [%(default)s]')
-    parser.add_argument('--redo_fits',   default=False, action='store_true',
-                        help=            'redo fits even if saved? [%(default)s]')
-    parser.add_argument('--report_fits', default=False, action='store_true',
-                        help=            'print results from each model [%(default)s]')
+    parser.add_argument('--show_plot',      default=True, action='store_false',
+                        help=               'show plots? [%(default)s]')
 
-    parser.add_argument('--prior_width', nargs='+', type=str,
-                        help=            'list priors to simultaneously perform a width study')
-    parser.add_argument('--prior_range', nargs='+', type=float,
-                        help=            'min, max, ds: to be used as np.arange(min,max+dm,dm) '
-                                         +'to be used for prior_width study')
-
-    parser.add_argument('--show_plot',   default=True, action='store_false',
-                        help=            'show plots? [%(default)s]')
-
-    parser.add_argument('--interact',    default=False, action='store_true',
-                        help=            'open IPython instance after to interact with results? [%(default)s]')
+    parser.add_argument('--interact',       default=False, action='store_true',
+                        help=               'open IPython instance after to interact with results? [%(default)s]')
 
     args = parser.parse_args()
     print(args)
@@ -80,7 +84,8 @@ def main():
         if args.report_fits:
             sf_fit.report_fits()
 
-        sf_fit.report_models()
+        if args.report_models:
+            sf_fit.report_models()
 
         sf_fit.model_avg_S(0.0,   plot_hist=True)
         sf_fit.model_avg_S(0.091, plot_hist=True)

@@ -25,8 +25,7 @@ fit_params = {
                 'Warren_1963' :'g',
             },
         },
-        'models':['poly_2', 'poly_3', 'poly_4', 'poly_5'],
-        #'models':['poly 2'],#, 'poly 4', 'poly 5'],
+        'models':['pheno', 'poly_2', 'poly_3', 'poly_4', 'poly_5'],
         'priors':gv.BufferDict({
             'S_0':gv.gvar(2e-7,1e-7),
             'S_1':gv.gvar(0, 1e-5),
@@ -35,6 +34,8 @@ fit_params = {
             'S_4':gv.gvar(0, 4e-6),
             'S_5':gv.gvar(0, 4e-6),
             'S_6':gv.gvar(0, 4e-6),
+            'a'  :gv.gvar(1, 0.5),
+            'b'  :gv.gvar(0, 1e-8),
             'log(f_Turkat_2021)' :gv.gvar(0.00, np.log(1.14)),
             'log(f_Mossa_2020)'  :gv.gvar(0.00, np.log(1.027)),
             'log(f_Tisma_2019)'  :gv.gvar(0.00, np.log(1.10)),

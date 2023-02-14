@@ -26,8 +26,9 @@ class FitManager():
         else:
             dsets = self.fit_params['dsets']
         self.x, self.y  = ld.load_data(args.d_file, args.d_path, dsets)
-        self.f_norm = args.f_norm
-        self.args = args
+        self.args       = args
+        if args.models:
+            self.fit_params['models'] = args.models
 
 
     def plot_data(self):
@@ -82,8 +83,8 @@ class FitManager():
                 else:
                     full_m = model+'_extrinsic_sig_none'
 
-                self.tmp_model_fit = sf_fit.SFFunctions(model, f_norm=self.f_norm)
-                self.tmp_p, self.tmp_p0 = self.tmp_model_fit.prune_priors(self.fit_params['priors'],self.y)
+                self.tmp_model_fit = sf_fit.SFFunctions(model, f_norm=self.args.f_norm, offset=self.args.offset)
+                self.tmp_p, self.tmp_p0 = self.tmp_model_fit.prune_priors(self.fit_params['priors'], self.y)
 
                 # if the fit is saved, load it, otherwise, do the analysis
                 saved_fit = 'pickled_fits/'+self.args.SF_reaction+'_'+full_m+'.p'
@@ -97,8 +98,8 @@ class FitManager():
                     if extrinsic:
                         print(model, 'extrinsic hunt')
                         z0 = {k:v for k,v in self.fit_params['z0'].items() if k in self.y}
-
                         ext_model = 'fit_extrinsic_sig_'+extrinsic
+
                         ffit,z = lsqfit.empbayes_fit(z0, getattr(self, ext_model))
                         
                         ffit.extrinsic_sig = z
@@ -114,63 +115,73 @@ class FitManager():
 
     def prior_width(self):
         self.prior_width_results = {}
-        for model in self.fit_results:
-            self.tmp_model_fit = sf_fit.SFFunctions(model, f_norm=self.f_norm)
-            self.tmp_p, self.tmp_p0 = self.tmp_model_fit.prune_priors(self.fit_params['priors'],self.y)
-            pi, pf, dp = self.args.prior_range
-            for sp in np.arange(pi, pf+dp, dp):
-                model_save = model.replace(' ','_')
-                for p in self.tmp_p:
-                    if p in self.args.prior_width:
-                        self.tmp_p[p] = gv.gvar(self.tmp_p[p].mean, sp)
-                        model_save += '_'+p
-                model_save += '_dS_%.2e' %(sp)
-                print(model_save)
-                if not os.path.exists('pickled_fits'):
-                    os.makedirs('pickled_fits')
-                if not os.path.exists('pickled_fits/'+model_save+'.p'):
-                    if self.args.extrinsic:
-                        z0 = {k:v for k,v in self.fit_params['z0'].items() if k in self.y}
-                        ffit,z = lsqfit.empbayes_fit(z0, self.fit_extrinsic_sig)
-                        self.prior_width_results[model_save] = ffit
-                    else:
-                        self.prior_width_results[model_save] = lsqfit.nonlinear_fit(
-                                                    data  = (self.x, self.y),
-                                                    prior = self.tmp_p,
-                                                    p0    = self.tmp_p0,
-                                                    fcn   = self.tmp_model_fit.fit_func,
-                                                    )
-                    gv.dump(self.prior_width_results[model_save], 'pickled_fits/'+model_save+'.p', add_dependencies=True)
+        for model in self.fit_params['models']:
+            for extrinsic in self.args.extrinsic:
+                if extrinsic:
+                    full_m = model+'_extrinsic_sig_'+extrinsic
                 else:
-                    print(model_save+' already exists - load fit')
-                    self.prior_width_results[model_save] = gv.load('pickled_fits/'+model_save+'.p')
+                    full_m = model+'_extrinsic_sig_none'
 
-            fit_search = model_save.split('_dS')[0]
-            all_fits   = glob('pickled_fits/'+fit_search+'*.p')
-            for fit_result in all_fits:
-                fit = fit_result.split('/')[-1].split('.p')[0]
-                if fit not in self.prior_width_results:
-                    self.prior_width_results[fit] = gv.load(fit_result)
-            logGBF = {}
-            ds = {}
-            for fit in self.prior_width_results:
-                logGBF[fit] = self.prior_width_results[fit].logGBF
-                ds[fit]     = float(fit.split('dS_')[-1])
-            logGBF_max = max([logGBF[k] for k in logGBF])
-            d_logGBF   = {k:logGBF[k]-logGBF_max for k in logGBF}
-            norm       = np.sum([np.exp(d_logGBF[k]) for k in logGBF])
-            weight     = {k:np.exp(d_logGBF[k])/norm for k in logGBF}
-            fits       = [fit for fit in weight]
-            x          = np.array([ds[fit] for fit in fits])
-            i_x        = np.argsort(x)
-            w          = np.array([weight[fit] for fit in fits])
-            plt.figure(model+' prior width')
-            ax = plt.axes([.12, .12, .87, .87])
-            ax.plot(x[i_x],w[i_x],marker='s')
-            ax.text(.05, .9, model, transform=ax.transAxes,fontsize=20)
-            ax.set_xlabel(r'$\tilde{\sigma}$', fontsize=16)
-            ax.set_ylabel('relative weight', fontsize=16)
-            plt.savefig('figures/'+model+'_prior_width_study.pdf', transparent=True)
+                self.tmp_model_fit = sf_fit.SFFunctions(model, f_norm=self.args.f_norm, offset=self.args.offset)
+                self.tmp_p, self.tmp_p0 = self.tmp_model_fit.prune_priors(self.fit_params['priors'],self.y)
+
+                pi, pf, dp = self.args.prior_range
+                for sp in np.arange(pi, pf+dp, dp):
+                    model_save = str(full_m)
+                    for p in self.tmp_p:
+                        if p in self.args.prior_width:
+                            self.tmp_p[p] = gv.gvar(self.tmp_p[p].mean, sp)
+                            model_save += '_'+p
+                    model_save += '_dS_%.2e' %(sp)
+                    print(model_save)
+                    if not os.path.exists('pickled_fits'):
+                        os.makedirs('pickled_fits')
+                    if not os.path.exists('pickled_fits/'+model_save+'.p'):
+                        if extrinsic:
+                            z0 = {k:v for k,v in self.fit_params['z0'].items() if k in self.y}
+                            ext_model = 'fit_extrinsic_sig_'+extrinsic
+                            ffit,z = lsqfit.empbayes_fit(z0, getattr(self, ext_model))
+                            ffit.extrinsic_siz = z
+                            self.prior_width_results[model_save] = ffit
+                        else:
+                            self.prior_width_results[model_save] = lsqfit.nonlinear_fit(
+                                                        data  = (self.x, self.y),
+                                                        prior = self.tmp_p,
+                                                        p0    = self.tmp_p0,
+                                                        fcn   = self.tmp_model_fit.fit_func,
+                                                        )
+                        gv.dump(self.prior_width_results[model_save], 'pickled_fits/'+model_save+'.p', add_dependencies=True)
+                    else:
+                        print(model_save+' already exists - load fit')
+                        self.prior_width_results[model_save] = gv.load('pickled_fits/'+model_save+'.p')
+
+                all_fits = glob('pickled_fits/'+full_m+'*.p')
+                for fit_result in all_fits:
+                    fit = fit_result.split('/')[-1].split('.p')[0]
+                    if full_m in fit and fit not in self.prior_width_results:
+                        self.prior_width_results[fit] = gv.load(fit_result)
+                logGBF = {}
+                ds = {}
+                for fit in self.prior_width_results:
+                    if full_m in fit:
+                        logGBF[fit] = self.prior_width_results[fit].logGBF
+                        ds[fit]     = float(fit.split('dS_')[-1])
+                logGBF_max = max([logGBF[k] for k in logGBF])
+                d_logGBF   = {k:logGBF[k]-logGBF_max for k in logGBF}
+                norm       = np.sum([np.exp(d_logGBF[k]) for k in logGBF])
+                weight     = {k:np.exp(d_logGBF[k])/norm for k in logGBF}
+                fits       = [fit for fit in weight]
+                x          = np.array([ds[fit] for fit in fits])
+                i_x        = np.argsort(x)
+                w          = np.array([weight[fit] for fit in fits])
+                plt.figure(full_m+' prior width')
+                ax = plt.axes([.12, .12, .87, .87])
+                ax.plot(x[i_x],w[i_x],marker='s')
+                ax.set_ylim(-0.005, 1.15*w.max())
+                ax.text(.05, .9, full_m, transform=ax.transAxes,fontsize=20)
+                ax.set_xlabel(r'$\tilde{\sigma}$', fontsize=16)
+                ax.set_ylabel('relative weight', fontsize=16)
+                plt.savefig('figures/'+full_m+'_prior_width_study.pdf', transparent=True)
 
     def get_weights(self):
         logGBF = {}
@@ -186,14 +197,17 @@ class FitManager():
     def do_model_avg(self):
         self.x_plot = {}
         xi = self.fit_params['plot_params']['x_lim'][0]
-        xf = self.fit_params['plot_params']['x_lim'][1]
+        if not any(['pheno' in model for model in self.fit_results]):
+            xf = self.fit_params['plot_params']['x_lim'][1]
+        else:
+            xf = 2
         self.x_plot['plot'] = np.arange(xi, xf, xi/10)
         self.get_weights()
         self.model_avg = 0
         self.model_var = 0
         for result in self.fit_results:
             model     = result.split('_')[0]+'_'+result.split('_')[1]
-            model_fit = sf_fit.SFFunctions(model, f_norm=False)
+            model_fit = sf_fit.SFFunctions(model, f_norm=False, offset=self.args.offset)
             tmp       = model_fit.fit_func(self.x_plot, self.fit_results[result].p)
             mean      = np.array([k.mean for k in tmp['plot']])
             sdev      = np.array([k.sdev for k in tmp['plot']])
@@ -234,7 +248,7 @@ class FitManager():
         var  = 0
         for result in self.fit_results:
             model     = result.split('_')[0]+'_'+result.split('_')[1]
-            model_fit = sf_fit.SFFunctions(model, f_norm=False)
+            model_fit = sf_fit.SFFunctions(model, f_norm=False, offset=self.args.offset)
             tmp       = model_fit.fit_func(E_result, self.fit_results[result].p)
             t_m       = np.array([k.mean for k in tmp['eval']])
             t_s       = np.array([k.sdev for k in tmp['eval']])
@@ -242,7 +256,7 @@ class FitManager():
             var      += self.weight[result] * t_m**2
         var += -np.array([k.mean**2 for k in mean])
         total_var = mean[0].var + var
-        print('S(%f) = %s +- %.1e' %(E,mean[0],np.sqrt(var)[0]))
+        print('S(E=%f) = %s +- %.1e' %(E,mean[0],np.sqrt(var)[0]))
 
         if plot_hist:
             pdf = 0.
@@ -254,7 +268,7 @@ class FitManager():
             for result in self.fit_results:
                 model     = result.split('_')[0]+'_'+result.split('_')[1]
                 w_i       = self.weight[result]
-                model_fit = sf_fit.SFFunctions(model, f_norm=False)
+                model_fit = sf_fit.SFFunctions(model, f_norm=False, offset=self.args.offset)
                 S_model   = model_fit.fit_func(E_result, self.fit_results[result].p)
                 p         = stats.norm.pdf(pdf_x, S_model['eval'][0].mean, S_model['eval'][0].sdev)
                 pdf      += w_i * p
