@@ -83,10 +83,9 @@ class FitManager():
                 else:
                     full_m = model+'_extrinsic_sig_none'
 
-                self.tmp_model_fit = sf_fit.SFFunctions(model, 
-                                                        f_norm=self.args.f_norm, 
-                                                        offset=self.args.offset,
-                                                        pheno_file=self.args.pheno_file)
+                offset = 'offset' in model
+                self.tmp_model_fit = sf_fit.SFFunctions(model, f_norm=self.args.f_norm, 
+                                                        offset=offset, pheno_file=self.args.pheno_file)
                 self.tmp_p, self.tmp_p0 = self.tmp_model_fit.prune_priors(self.fit_params['priors'], self.y)
 
                 # if the fit is saved, load it, otherwise, do the analysis
@@ -99,7 +98,7 @@ class FitManager():
                     self.fit_results[full_m] = gv.load(saved_fit)
                 else:
                     if extrinsic:
-                        print(model, 'extrinsic hunt')
+                        print(model, 'optimize extrinsic uncertainty')
                         z0 = {k:v for k,v in self.fit_params['z0'].items() if k in self.y}
                         ext_model = 'fit_extrinsic_sig_'+extrinsic
 
@@ -125,41 +124,41 @@ class FitManager():
                 else:
                     full_m = model+'_extrinsic_sig_none'
 
-                self.tmp_model_fit = sf_fit.SFFunctions(model, 
-                                                        f_norm=self.args.f_norm, 
-                                                        offset=self.args.offset,
-                                                        pheno_file=self.args.pheno_file)
+                offset = 'offset' in model
+                self.tmp_model_fit = sf_fit.SFFunctions(model, f_norm=self.args.f_norm, 
+                                                        offset=offset, pheno_file=self.args.pheno_file)
                 self.tmp_p, self.tmp_p0 = self.tmp_model_fit.prune_priors(self.fit_params['priors'],self.y)
 
                 pi, pf, dp = self.args.prior_range
                 for sp in np.arange(pi, pf+dp, dp):
-                    model_save = str(full_m)
+                    model_key = str(full_m)
                     for p in self.tmp_p:
                         if p in self.args.prior_width:
                             self.tmp_p[p] = gv.gvar(self.tmp_p[p].mean, sp)
-                            model_save += '_'+p
-                    model_save += '_dS_%.2e' %(sp)
-                    print(model_save)
+                            model_key += '_'+p
+                    model_key += '_dS_%.2e' %(sp)
+                    model_save = 'pickled_fits/'+self.args.SF_reaction+'_'+model_key+'.p'
+                    print(model_key)
                     if not os.path.exists('pickled_fits'):
                         os.makedirs('pickled_fits')
-                    if not os.path.exists('pickled_fits/'+model_save+'.p'):
+                    if not os.path.exists(model_save):
                         if extrinsic:
                             z0 = {k:v for k,v in self.fit_params['z0'].items() if k in self.y}
                             ext_model = 'fit_extrinsic_sig_'+extrinsic
                             ffit,z = lsqfit.empbayes_fit(z0, getattr(self, ext_model))
                             ffit.extrinsic_siz = z
-                            self.prior_width_results[model_save] = ffit
+                            self.prior_width_results[model_key] = ffit
                         else:
-                            self.prior_width_results[model_save] = lsqfit.nonlinear_fit(
+                            self.prior_width_results[model_key] = lsqfit.nonlinear_fit(
                                                         data  = (self.x, self.y),
                                                         prior = self.tmp_p,
                                                         p0    = self.tmp_p0,
                                                         fcn   = self.tmp_model_fit.fit_func,
                                                         )
-                        gv.dump(self.prior_width_results[model_save], 'pickled_fits/'+model_save+'.p', add_dependencies=True)
+                        gv.dump(self.prior_width_results[model_key], model_save, add_dependencies=True)
                     else:
-                        print(model_save+' already exists - load fit')
-                        self.prior_width_results[model_save] = gv.load('pickled_fits/'+model_save+'.p')
+                        print(model_key+' already exists - load fit')
+                        self.prior_width_results[model_key] = gv.load(model_save)
 
                 all_fits = glob('pickled_fits/'+full_m+'*.p')
                 for fit_result in all_fits:
@@ -213,10 +212,9 @@ class FitManager():
         self.model_var = 0
         for result in self.fit_results:
             model     = result.split('_')[0]+'_'+result.split('_')[1]
-            model_fit = sf_fit.SFFunctions(model, 
-                                           f_norm=False, 
-                                           offset=self.args.offset,
-                                           pheno_file=self.args.pheno_file)
+            offset    = 'offset' in model
+            model_fit = sf_fit.SFFunctions(model, f_norm=False, 
+                                           offset=offset, pheno_file=self.args.pheno_file)
             tmp       = model_fit.fit_func(self.x_plot, self.fit_results[result].p)
             mean      = np.array([k.mean for k in tmp['plot']])
             sdev      = np.array([k.sdev for k in tmp['plot']])
@@ -257,10 +255,9 @@ class FitManager():
         var  = 0
         for result in self.fit_results:
             model     = result.split('_')[0]+'_'+result.split('_')[1]
-            model_fit = sf_fit.SFFunctions(model, 
-                                           f_norm=False, 
-                                           offset=self.args.offset,
-                                           pheno_file=self.args.pheno_file)
+            offset    = 'offest' in model
+            model_fit = sf_fit.SFFunctions(model, f_norm=False, 
+                                           offset=offset, pheno_file=self.args.pheno_file)
             tmp       = model_fit.fit_func(E_result, self.fit_results[result].p)
             t_m       = np.array([k.mean for k in tmp['eval']])
             t_s       = np.array([k.sdev for k in tmp['eval']])
@@ -279,11 +276,10 @@ class FitManager():
             self.pdf_model = {}
             for result in self.fit_results:
                 model     = result.split('_')[0]+'_'+result.split('_')[1]
+                offset    = 'offest' in model
                 w_i       = self.weight[result]
-                model_fit = sf_fit.SFFunctions(model, 
-                                               f_norm=False, 
-                                               offset=self.args.offset,
-                                               pheno_file=self.args.pheno_file)
+                model_fit = sf_fit.SFFunctions(model, f_norm=False, 
+                                               offset=offset, pheno_file=self.args.pheno_file)
                 S_model   = model_fit.fit_func(E_result, self.fit_results[result].p)
                 p         = stats.norm.pdf(pdf_x, S_model['eval'][0].mean, S_model['eval'][0].sdev)
                 pdf      += w_i * p

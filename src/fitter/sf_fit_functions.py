@@ -10,7 +10,7 @@ class SFFunctions():
         except:
             self.order = 0
         self.f_norm = f_norm
-        self.offset = offset
+        self.offset = 'offset' in model
 
         if 'pheno' in model:
             from scipy.interpolate import interp1d

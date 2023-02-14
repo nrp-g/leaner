@@ -31,8 +31,6 @@ def main():
                                             +"in analysis, options are rel, abs and '' [%(default)s]")
     parser.add_argument('--pheno_file',     default='data/Spd_newrun_interspline.dat',
                         help=               'what .dat file to use for pheno function input [%(default)s]')
-    parser.add_argument('--offset',         default=True, action='store_false',
-                        help=               'for pheno fit, add offset parameter? [%(default)s]')
 
     parser.add_argument('--run_analysis',   default=True, action='store_false',
                         help=               'run Bayes Model Analysis? [%(default)s]')
