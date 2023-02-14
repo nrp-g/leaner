@@ -34,7 +34,7 @@ fit_params = {
             'S_4':gv.gvar(0, 4e-6),
             'S_5':gv.gvar(0, 4e-6),
             'S_6':gv.gvar(0, 4e-6),
-            'a'  :gv.gvar(1, 0.5),
+            'a'  :gv.gvar(1, 0.08),
             'b'  :gv.gvar(0, 1e-8),
             'log(f_Turkat_2021)' :gv.gvar(0.00, np.log(1.14)),
             'log(f_Mossa_2020)'  :gv.gvar(0.00, np.log(1.027)),

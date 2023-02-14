@@ -83,7 +83,10 @@ class FitManager():
                 else:
                     full_m = model+'_extrinsic_sig_none'
 
-                self.tmp_model_fit = sf_fit.SFFunctions(model, f_norm=self.args.f_norm, offset=self.args.offset)
+                self.tmp_model_fit = sf_fit.SFFunctions(model, 
+                                                        f_norm=self.args.f_norm, 
+                                                        offset=self.args.offset,
+                                                        pheno_file=self.args.pheno_file)
                 self.tmp_p, self.tmp_p0 = self.tmp_model_fit.prune_priors(self.fit_params['priors'], self.y)
 
                 # if the fit is saved, load it, otherwise, do the analysis
@@ -122,7 +125,10 @@ class FitManager():
                 else:
                     full_m = model+'_extrinsic_sig_none'
 
-                self.tmp_model_fit = sf_fit.SFFunctions(model, f_norm=self.args.f_norm, offset=self.args.offset)
+                self.tmp_model_fit = sf_fit.SFFunctions(model, 
+                                                        f_norm=self.args.f_norm, 
+                                                        offset=self.args.offset,
+                                                        pheno_file=self.args.pheno_file)
                 self.tmp_p, self.tmp_p0 = self.tmp_model_fit.prune_priors(self.fit_params['priors'],self.y)
 
                 pi, pf, dp = self.args.prior_range
@@ -207,7 +213,10 @@ class FitManager():
         self.model_var = 0
         for result in self.fit_results:
             model     = result.split('_')[0]+'_'+result.split('_')[1]
-            model_fit = sf_fit.SFFunctions(model, f_norm=False, offset=self.args.offset)
+            model_fit = sf_fit.SFFunctions(model, 
+                                           f_norm=False, 
+                                           offset=self.args.offset,
+                                           pheno_file=self.args.pheno_file)
             tmp       = model_fit.fit_func(self.x_plot, self.fit_results[result].p)
             mean      = np.array([k.mean for k in tmp['plot']])
             sdev      = np.array([k.sdev for k in tmp['plot']])
@@ -248,7 +257,10 @@ class FitManager():
         var  = 0
         for result in self.fit_results:
             model     = result.split('_')[0]+'_'+result.split('_')[1]
-            model_fit = sf_fit.SFFunctions(model, f_norm=False, offset=self.args.offset)
+            model_fit = sf_fit.SFFunctions(model, 
+                                           f_norm=False, 
+                                           offset=self.args.offset,
+                                           pheno_file=self.args.pheno_file)
             tmp       = model_fit.fit_func(E_result, self.fit_results[result].p)
             t_m       = np.array([k.mean for k in tmp['eval']])
             t_s       = np.array([k.sdev for k in tmp['eval']])
@@ -268,7 +280,10 @@ class FitManager():
             for result in self.fit_results:
                 model     = result.split('_')[0]+'_'+result.split('_')[1]
                 w_i       = self.weight[result]
-                model_fit = sf_fit.SFFunctions(model, f_norm=False, offset=self.args.offset)
+                model_fit = sf_fit.SFFunctions(model, 
+                                               f_norm=False, 
+                                               offset=self.args.offset,
+                                               pheno_file=self.args.pheno_file)
                 S_model   = model_fit.fit_func(E_result, self.fit_results[result].p)
                 p         = stats.norm.pdf(pdf_x, S_model['eval'][0].mean, S_model['eval'][0].sdev)
                 pdf      += w_i * p

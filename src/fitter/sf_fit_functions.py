@@ -3,7 +3,7 @@ import gvar as gv
 
 class SFFunctions():
 
-    def __init__(self, model, f_norm=True, offset=True):
+    def __init__(self, model, f_norm=True, offset=True, pheno_file='data/Spd_newrun_interspline.dat'):
         self.model  = model.split('_')[0]
         try:
             self.order = int(model.split('_')[-1])
@@ -14,7 +14,7 @@ class SFFunctions():
 
         if 'pheno' in model:
             from scipy.interpolate import interp1d
-            pheno_spline = open('data/Spd_newrun_interspline.dat').readlines()
+            pheno_spline = open(pheno_file).readlines()
             e_mev = []
             S     = []
             for l in pheno_spline:
