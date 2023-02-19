@@ -3,3 +3,5 @@ src/fitter/__init__.py
 src/fitter/__pycache__/
 src/solar_fusion_reactions.egg-info/
 input/__pycache__/
+figures/
+pickled_fits/
