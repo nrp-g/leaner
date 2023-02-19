@@ -1,4 +1,4 @@
-\documentclass[prd,11pt,superscriptaddress,notitlepage,tightenlines,nofootinbib,floatfix]{revtex4-1}
+\documentclass[prd,10pt,superscriptaddress,notitlepage,tightenlines,nofootinbib,floatfix]{revtex4-1}
 \input{preamble}
 
 \input{def}
@@ -51,7 +51,7 @@ Details of the analysis are presented in Sec.~\ref{sec:S_12_bma}, following a ge
 Using the Gaussian Bayes Factors from the analysis, the $S_{pheno}(E;\lambda)$ models are strongly favored over the polynomial models.
 The models used and their resulting log Gaussian Bayes Factors (logGBF), relative weigths, augmented $\chi^2_{aug}/dof$ and $Q$ values are presented in Table~\ref{tab:all_models}.
 From this analysis, the model average $S$ factor at two different energies is given by
-\begin{align}
+\begin{align}\label{eq:all_models}
 S_{12}(E=0) &= 2.028(51)(09)\times10^{-7} \textrm{ MeV b}\, ,
 \nonumber\\
 S_{12}(E=91{\rm keV}) &= 8.11(16)(00)\times10^{-7} \textrm{ MeV b}\, ,
@@ -79,9 +79,8 @@ The logGBF and relative weights of the various models.
 
 
 \begin{figure}
-\includegraphics[width=0.4\textwidth]{figures/S_model_avg_all}
-\includegraphics[width=0.29\textwidth]{figures/S_E0.0000_hist_all}
-\includegraphics[width=0.29\textwidth]{figures/S_E0.0910_hist_all}
+\includegraphics[width=0.48\textwidth]{figures/S_E0.0000_hist_all}
+\includegraphics[width=0.48\textwidth]{figures/S_E0.0910_hist_all}
 \caption{\label{fig:all_models}
 The model average $S$-factor versus energy compared with the data as well as the weighted distributions at $E=0$ and $E=91$~keV.}
 \end{figure}
@@ -108,6 +107,7 @@ S_{12}(E=0) &= 2.088(89)(05)\times10^{-7} \textrm{ MeV b}\, ,
 S_{12}(E=91{\rm keV}) &= 7.99(18)(00)\times10^{-7} \textrm{ MeV b}\, ,
 \end{align}
 The model weights are presented in table~\ref{tab:poly} and the model average fit is presented in \figref{fig:poly}.
+At the $1-\s$ level, these results are consistent with those in \eqnref{eq:all_models}.
 
 \begin{table}
 \begin{ruledtabular}
@@ -126,11 +126,23 @@ The logGBF and relative weights of the various models when only polynomials are 
 \end{table}
     
 \begin{figure}
-\includegraphics[width=0.4\textwidth]{figures/S_model_avg_poly}
-\includegraphics[width=0.29\textwidth]{figures/S_E0.0000_hist_poly}
-\includegraphics[width=0.29\textwidth]{figures/S_E0.0910_hist_poly}
+\includegraphics[width=0.48\textwidth]{figures/S_E0.0000_hist_poly}
+\includegraphics[width=0.48\textwidth]{figures/S_E0.0910_hist_poly}
 \caption{\label{fig:poly}
 The polynomial only model average $S$-factor versus energy compared with the data as well as the weighted distributions at $E=0$ and $E=91$~keV.}
+\end{figure}
+
+
+\begin{figure}
+\begin{tabular}{cc}
+\includegraphics[width=0.49\textwidth]{figures/S_model_avg_all}
+&
+\includegraphics[width=0.49\textwidth]{figures/S_model_avg_poly}
+\\
+(all models) & (polynomial)
+\end{tabular}
+\caption{\label{fig:S_factor_E}
+The $S$-factor versus energy compared with the data as well as the weighted distributions at $E=0$ and $E=91$~keV.}
 \end{figure}
     
 
@@ -160,6 +172,18 @@ This is a lightweight Python package that can perform the analysis of $S_{12}$. 
 
 
 \section{Bayes Model Averaging in general \label{sec:bma}}
+
+We use Gaussian priors for all parameters, such that the objective function which is minimized to determine the posterior distributions of all parameters is given by
+\begin{equation}
+\chi^2_{aug} = \sum_d \left( \frac{y_d - f(x_d;\l)}{\s_d}\right)^2 
+    + \sum_i \left( \frac{\l_i - \tilde{\mu}_i}{\tilde{\s}_i} \right)^2\, ,
+\end{equation}
+where in this observable, all the data $y_d$ are deteremined with uncorrelated uncertainties $\s_d$.
+The user choses a prior mean $\tilde{\mu}_i$ and width $\tilde{\s}_i$ for each parameter $\l_i$ that is being deteremined in the analysis.
+
+
+
+
 
 Using Bayes' Theorem, we can ask conditional probabilities, such as what is the probability distribution of a given observable, given the data, which we can obtain by ``marginalizing'' over the space of models that describe the observable.  For example, the posterior distribution of the $S$-factor can be determined with 
 \begin{equation}
@@ -225,7 +249,7 @@ We could chose to marginalize over $\tilde{\s}$ by summing the product of the re
 In practice, if we pick a value of $\tilde{\s}$ that is close to that which maximizes the GFB, this is most often sufficient to capture the relative weight of a given model function as compared to other model functions: choosing $\tilde{\s} = 4\times10^{-6}$, $5\times10^{-6}$ or $6\times10^{-6}$ will have very little effect on the relative weight of $S_3(E)$ as compared to $S_2(E)$ or $S_4(E)$ or other models.
 
 \begin{figure}
-\includegraphics[width=0.6\textwidth]{../figures/poly_3_extrinsic_sig_rel_prior_width_study}
+\includegraphics[width=0.48\textwidth]{figures/poly_3_extrinsic_sig_rel_prior_width_study}
 \caption{\label{fig:poly_3_prior}
 Relative weight of $S_3(E)$ versus the prior width on the coefficient of the $E^3$ order term.
 The relative weight is determined from the ratio of the GBF from a particular choice of $\tilde{\s}$ to the sum over the GBF factors from all choices of $\tilde{\s}$.  A value of $\tilde{\s}\approx5\times10^{-6}$ optimizes the GBF, and thus has the highest weight.}
@@ -244,17 +268,127 @@ The one clear enhancement over the study presented here would be to make the pol
 where $E_{ref}$ is some reference energy scale (chosen by the user), such that all the coefficients are dimensionless.
 
 \begin{figure}
-\includegraphics[width=0.32\textwidth]{../figures/poly_2_extrinsic_sig_rel_prior_width_study}
-\includegraphics[width=0.32\textwidth]{../figures/poly_4_extrinsic_sig_rel_prior_width_study}
-\includegraphics[width=0.32\textwidth]{../figures/poly_5_extrinsic_sig_rel_prior_width_study}
+\includegraphics[width=0.32\textwidth]{figures/poly_2_extrinsic_sig_rel_prior_width_study}
+\includegraphics[width=0.32\textwidth]{figures/poly_4_extrinsic_sig_rel_prior_width_study}
+\includegraphics[width=0.32\textwidth]{figures/poly_5_extrinsic_sig_rel_prior_width_study}
 \caption{\label{fig:poly_prior}
 Relative weight of various order polynomial fit functions as a function of the prior width, as described in the text.}
 \end{figure}
-    
 
+
+In \figref{fig:scale_factor_width}, we show a similar study using the phenomenological fit function, $S_{pheno}(E;a)$ and varying the prior width on the scale factor, $a$.
+
+\begin{figure}
+\includegraphics[width=0.48\textwidth]{figures/pheno_extrinsic_sig_rel_prior_width_study}
+\includegraphics[width=0.48\textwidth]{figures/pheno_offset_extrinsic_sig_rel_prior_width_study}
+\caption{\label{fig:scale_factor_width}
+Relative weight of $S_{pheno}(E;a)$ (left) and $S_{pheno}(E;a,b)$ (right) as a function of the prior width of the scale factor, $a$.}
+\end{figure}
 
 
 \subsection{$S_{12}$ model average \label{sec:s_12_bma}}
+
+As described in Ref.~\cite{Moscoso:2021xog}, there are two modifications to a standard least-squares optimization that we undertake for the analysis.
+The first is to use a log-normal normalization factor for each dataset to treat the systematic uncertainties.
+The second is to add an unknown, extrinsic stochastic uncertainty to each dataset.  Quoting Ref.~\cite{Moscoso:2021xog}:
+\quote{In many cases, the observed scatter of the measured data cannot be explained solely by the reported statistical uncertainties, suggesting the presence of additional sources of statistical uncertainties unknown to the experimenter.  We utilize the expression extrinsic uncertainty for describing such effects~\cite{deSouza:2019pmr}.}
+These extrinsic uncertainties can be added for each data set as an absolute, energy-independent correction, as in Ref.~\cite{Moscoso:2021xog}, or they can be added as relative to the mean value of $S(E)$, as in Ref.~\cite{Odell:2021tqd}.
+We explore both options.
+
+\begin{verbatim}
+# relative extrinsic uncertainty
+z_cutoff = 1.
+
+for dset in dsets:
+    dy_extrinsic = y[dset].mean  *  z_cutoff * arctan(z[dset]**2 / z_cutoff)
+    y_prime      = y + normal(0, dy_extrinsic)
+
+# absolute extrinsic uncertainty
+for dset in dsets:
+    dy_extrinsic = z_cutoff * arctan(z[dset]**2 / z_cutoff)
+    y_prime      = y + normal(0, dy_extrinsic)
+\end{verbatim}
+In both cases, the parameters \texttt{z[dset]} are not known ahead of time and they are determined by optimizing the Bayes Factor, as described in Sec.~\ref{sec:prior_optimization}, using the \href{https://lsqfit.readthedocs.io/en/latest/lsqfit.html?highlight=empbayes#lsqfit.empbayes_fit}{lsqfit.empbayes} function taking as input \texttt{y\_prime} for the data, as described in the \href{https://lsqfit.readthedocs.io/en/latest/overview.html?highlight=unknown#y-has-unknown-errors}{y has Unknown Errors} of the \href{https://lsqfit.readthedocs.io/}{lsqfit.readthedocs}.
+We note that the objects \texttt{y} and \texttt{y\_prime} are Gaussian Variables, from the \href{https://github.com/gplepage/gvar}{gvar} Python package, which treats the objects as Gaussian random variables, tracking the error propagation when using them with arithmatic expressions.
+
+Then, the fit is performed by finding values of the parameters which minimize the augmented $\chi^2$ function defined by
+\begin{equation}
+\chi^2_{aug} = \sum_{d} \sum_{i_d} 
+    \frac{\big( y_{d,i_d} - f_d \times S(E; \lambda) \big)^2}{\s_{d,i_d}^2 + (\s_d^{ext})^2}
+    +\sum_p \left( \frac{\l_p - \tilde{\mu}_p}{\tilde{\s}_p} \right)^2\, .
+\end{equation}
+The sum over $d$ is a sum over the various datasets used in the analysis.
+The sum over $i_d$ is a sum over the uncorrelated data samples, $y_{d,i_d}$ in each dataset with quoted statistical uncertainty $\s_{d,i_d}$.
+For each dataset, the fit function is multiplied by a log-normal normalization factor $f_d$, given by the quoted systematic uncertainty from the original publication of the data.
+The inverse, $1/f_d$, is a factor one would multiply the data by to bring it in line with the resulting fit function at the optimized values of the parameters.
+For each dataset, an unknown statistical extrinsic uncertainty $\s_d^{ext}$ is added, which is determined in the analysis.
+
+The analysis can be performed turning on and off many of these features using the fitting code \url{https://github.com/walkloud/solar_fusion_reactions}.
+Here we present results for two fits as examples:
+\begin{verbatim}
+    -----------------------------------------------------------
+    pheno_extrinsic_sig_rel
+    -----------------------------------------------------------
+    Least Square Fit:
+      chi2/dof [dof] = 0.77 [96]    Q = 0.96    logGBF = 1478.7
+    
+    Parameters:            posterior      [ prior      ]  *-sigma tension
+                      a    0.921 (19)     [ 1.000 (80) ]
+     log(f_Turkat_2021)    0.284 (46)     [  0.00 (13) ]  **
+      log(f_Mossa_2020)   -0.014 (20)     [ 0.000 (27) ]
+      log(f_Tisma_2019)    0.009 (63)     [ 0.000 (95) ]
+    log(f_Casella_2002)    0.040 (21)     [ 0.000 (44) ]
+     log(f_Schmid_1997)   -0.037 (28)     [ 0.000 (86) ]
+         log(f_Ma_1997)   -0.122 (43)     [ 0.000 (86) ]  *
+     log(f_Warren_1963)   -0.072 (33)     [ 0.000 (95) ]
+    ----------------------------------------------------
+          f_Turkat_2021    1.329 (61)     [  1.00 (13) ]  **
+           f_Mossa_2020    0.986 (20)     [ 1.000 (27) ]
+           f_Tisma_2019    1.009 (63)     [ 1.000 (95) ]
+         f_Casella_2002    1.041 (22)     [ 1.000 (44) ]
+          f_Schmid_1997    0.964 (27)     [ 1.000 (86) ]
+              f_Ma_1997    0.885 (38)     [ 1.000 (86) ]  *
+          f_Warren_1963    0.930 (31)     [ 1.000 (95) ]
+    
+    Settings:
+      svdcut/n = 1e-12/0    tol = (1e-08,1e-10,1e-10*)    (itns/time = 6/0.0)
+      fitter = scipy_least_squares    method = trf
+    
+\end{verbatim}
+\begin{verbatim}
+    -----------------------------------------------------------
+    poly_3_extrinsic_sig_rel
+    -----------------------------------------------------------
+    Least Square Fit:
+      chi2/dof [dof] = 0.7 [96]    Q = 0.99    logGBF = 1470.2
+    
+    Parameters:
+                    S_0   2.089(89)e-07      [ 2.0(1.0)e-07 ]
+                    S_1    5.92(25)e-06      [ 0.0(1.0)e-05 ]
+                    S_2    6.34(88)e-06      [ 0.0(1.0)e-05 ]
+                    S_3   -2.25(54)e-06      [ 0.0(4.0)e-06 ]
+                      a      1.000 (80)      [   1.000 (80) ]
+     log(f_Turkat_2021)      0.265 (49)      [    0.00 (13) ]  **
+      log(f_Mossa_2020)     -0.002 (22)      [   0.000 (27) ]
+      log(f_Tisma_2019)      0.018 (63)      [   0.000 (95) ]
+    log(f_Casella_2002)      0.024 (30)      [   0.000 (44) ]
+     log(f_Schmid_1997)     -0.040 (31)      [   0.000 (86) ]
+         log(f_Ma_1997)     -0.111 (43)      [   0.000 (86) ]  *
+     log(f_Warren_1963)     -0.048 (54)      [   0.000 (95) ]
+    ---------------------------------------------------------
+          f_Turkat_2021      1.303 (64)      [    1.00 (13) ]  **
+           f_Mossa_2020      0.998 (22)      [   1.000 (27) ]
+           f_Tisma_2019      1.018 (64)      [   1.000 (95) ]
+         f_Casella_2002      1.025 (30)      [   1.000 (44) ]
+          f_Schmid_1997      0.961 (30)      [   1.000 (86) ]
+              f_Ma_1997      0.895 (38)      [   1.000 (86) ]  *
+          f_Warren_1963      0.953 (51)      [   1.000 (95) ]
+    
+    Settings:
+      svdcut/n = 1e-12/0    tol = (1e-08,1e-10,1e-10*)    (itns/time = 7/0.0)
+      fitter = scipy_least_squares    method = trf
+    
+\end{verbatim}
 
 
 
