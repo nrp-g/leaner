@@ -29,7 +29,53 @@ pip install -e .
 ```
 
 ### Usage
-The analysis package uses an input file where the user specifies information such as the data file and priors for the parameters.
+The analysis package uses an input file where the user specifies information such as the data file and priors for the parameters.  In addition, many options for turning on and off various options (such as adding unknown extrinsic uncertainties, the log-normal normalization factors, which models to use etc.) can be controlled at run time with the command line.  For example
+
+```
+$ fit_sf_reactions -h
+usage: fit_sf_reactions [-h] [--SF_reaction SF_REACTION] [--fit_params FIT_PARAMS]
+                        [--d_file D_FILE] [--d_sets D_SETS [D_SETS ...]]
+                        [--models MODELS [MODELS ...]] [--f_norm]
+                        [--extrinsic EXTRINSIC [EXTRINSIC ...]]
+                        [--pheno_file PHENO_FILE] [--run_analysis] [--redo_fits]
+                        [--report_fits] [--report_models]
+                        [--prior_width PRIOR_WIDTH [PRIOR_WIDTH ...]]
+                        [--prior_range PRIOR_RANGE [PRIOR_RANGE ...]] [--show_plot]
+                        [--interact]
+
+Perform Bayes analysis of nuclear reaction data S-factors
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --SF_reaction SF_REACTION
+                        specify SF reaction [S_12]
+  --fit_params FIT_PARAMS
+                        specify user input file [input/fit_params.py]
+  --d_file D_FILE       specify data file [data/solar_fusion_reacions.h5]
+  --d_sets D_SETS [D_SETS ...]
+                        user can specify d_set list to override input file
+  --models MODELS [MODELS ...]
+                        overide models in input file with this list
+  --f_norm              S -> f S where f is an normalizationfactor to be determined
+                        [True]
+  --extrinsic EXTRINSIC [EXTRINSIC ...]
+                        list of extrinsic statistical uncertainty modelsin analysis,
+                        options are rel, abs and '' [['rel']]
+  --pheno_file PHENO_FILE
+                        what .dat file to use for pheno function input
+                        [data/Spd_newrun_interspline.dat]
+  --run_analysis        run Bayes Model Analysis? [True]
+  --redo_fits           redo fits even if saved? [False]
+  --report_fits         print results from each model [False]
+  --report_models       report model weights? [True]
+  --prior_width PRIOR_WIDTH [PRIOR_WIDTH ...]
+                        list priors to simultaneously perform a width study
+  --prior_range PRIOR_RANGE [PRIOR_RANGE ...]
+                        min, max, ds: to be used as np.arange(min,max+dm,dm) to be used
+                        for prior_width study
+  --show_plot           show plots? [True]
+  --interact            open IPython instance after to interact with results? [False]
+  ```
 
 
 
