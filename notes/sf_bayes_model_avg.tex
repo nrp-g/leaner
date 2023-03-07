@@ -23,7 +23,7 @@ This work was motivated by the INT Solar Fusion III Workshop, held in Berkeley, 
 \tableofcontents
 
 \section{Results}
-We have performed a Bayes Model Averaging of the $D(p,\g)^3{\rm He}$ $S$-factor, also known as $S_{12}$, using polynomials to various orders as well as a modification of the phenomenological prediction from Ref.~\cite{Marcucci:2005zc}.
+We have performed a Bayes Model Averaging of the $D(p,\g)^3{\rm He}$ $S$-factor, also known as $S_{12}$, using polynomials to various orders as well as a modification of the phenomenological prediction from Refs.~\cite{Marcucci:2005zc,Marcucci:2015yla}.
 The analysis strategy follows Ref.~\cite{Moscoso:2021xog} very closely.
 What this work offers in addition is a Bayesian Model Averaging.
 All results presented here can be reproduced utilizing the Python software provided at \url{https://github.com/walkloud/solar_fusion_reactions}.
@@ -38,7 +38,7 @@ S_{pheno}(E; a) &= a S_{nuc}(E)\, ,
 \nonumber\\
 S_{poly}^{(n)}(E; S_i) &= \sum_{i=0}^n S_i E^i\, ,
 \end{align}
-for $n=2,3,4,5$ and $S_{nuc}(E)$ is an update of that in Ref.~\cite{Marcucci:2005zc} provided by L.~Marcucci.
+for $n=2,3,4,5$ and $S_{nuc}(E)$ is an update of that in Ref.~\cite{Marcucci:2005zc} provided in Ref.~\cite{Marcucci:2015yla}.
 The model averaging is performed using an approximation of the Bayes Factor determined in the limit that all distributions can be approximated as Gaussian.
 
 We consider two model averages, one utilizing all models in Eq.~\eqref{eq:models} and one using only the polynomial models.  The reason for considering these two averages is that we do not have good prior information as to whether the two $S_{pheno}(E)$ models are reasonable given the extracted values of $a$.
