@@ -22,11 +22,39 @@ pip install -e .
 ```
 which should install the executable `fit_sf_reactions`.
 
+#### Reinstalling
 Reinstalling the package after updates is as simple as (from the solar_fusion_reactions directory)
 ```
 git pull
 pip install -e .
 ```
+
+#### Uninstalling
+To uninstall the package
+```
+pip uninstall solar_fusion_reactions
+```
+
+#### Testing
+Test it out in a clean environment.  If you have the [Anaconda](https://www.anaconda.com/products/distribution) Python package manager installed, you can create a new env and install
+```
+conda create -n bare3.8 python=3.8
+conda activate bare3.8
+pip install -e .
+```
+- NOTE 1: On my new M2 mac, with a new homebrew, homebrew installs to `/opt/homebrew` rather than `/usr/local`.  Therefore, in order to get `pip` to find the HDF5 installation (after `brew install hdf5`), I need to add `export HDF5_DIR=/opt/homebrew/opt/hdf5` to my `.bash_profile`, otherwise, `pip install tables` fails.
+
+- NOTE 2: The installation will claim to have failed, but this is a known issue with required packages described in the `setup.cfg` file and `setuptools`, not being able to find packages that where just installed as a dependency.  A test of whether it worked or not is to type
+
+```which fit_sf_reactions```
+
+If that returns a location, the installation should have worked.  This can be more thoroughly tested by running the help command
+
+```fit_sf_reactions -h```
+
+which returns the [usage](#usage) message.
+
+
 
 ### Usage
 The analysis package uses an input file where the user specifies information such as the data file and priors for the parameters.  In addition, many options for turning on and off various options (such as adding unknown extrinsic uncertainties, the log-normal normalization factors, which models to use etc.) can be controlled at run time with the command line.  For example

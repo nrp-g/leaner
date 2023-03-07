@@ -1,12 +1,12 @@
 import sys, os
 import argparse
-try:
-    import fitter.fit_manager as FM
-    import fitter.load_data as ld
-except:
-    print('running without installation')
-    print('THIS DOES NOT WORK YET')
-    import src.fitter.fit_manager as FM
+#try:
+import fitter.fit_manager as FM
+import fitter.load_data as ld
+#except:
+#    print('running without installation')
+#    print('THIS DOES NOT WORK YET')
+#    import src.fitter.fit_manager as FM
 
 def main():
     parser = argparse.ArgumentParser(
