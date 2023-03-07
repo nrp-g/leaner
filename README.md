@@ -63,7 +63,7 @@ optional arguments:
                         options are rel, abs and '' [['rel']]
   --pheno_file PHENO_FILE
                         what .dat file to use for pheno function input
-                        [data/Spd_newrun_interspline.dat]
+                        [data/Marcucci_etal_PRL116_2016_1510.07877.dat]
   --run_analysis        run Bayes Model Analysis? [True]
   --redo_fits           redo fits even if saved? [False]
   --report_fits         print results from each model [False]

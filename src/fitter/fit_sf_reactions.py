@@ -29,7 +29,7 @@ def main():
     parser.add_argument('--extrinsic',      nargs='+', default=['rel'],
                         help=               'list of extrinsic statistical uncertainty models'
                                             +"in analysis, options are rel, abs and '' [%(default)s]")
-    parser.add_argument('--pheno_file',     default='data/Spd_newrun_interspline.dat',
+    parser.add_argument('--pheno_file',     default='data/Marcucci_etal_PRL116_2016_1510.07877.dat',
                         help=               'what .dat file to use for pheno function input [%(default)s]')
 
     parser.add_argument('--run_analysis',   default=True, action='store_false',
