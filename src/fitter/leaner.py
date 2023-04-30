@@ -23,6 +23,8 @@ def main():
                         help=               'user can specify d_set list to override input file')
 
     parser.add_argument('--models',         nargs='+', help='overide models in input file with this list')
+    parser.add_argument('--save_fits',      default=True, action='store_false',
+                        help=               'save fits? [%(default)s]')
     parser.add_argument('--f_norm',         default=True, action='store_false',
                         help=               'S -> f S where f is an normalization'
                                             +'factor to be determined [%(default)s]')

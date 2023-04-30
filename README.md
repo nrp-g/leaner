@@ -38,10 +38,8 @@ pip uninstall leaner
 #### Testing
 Test it out in a clean environment.  If you have the [Anaconda](https://www.anaconda.com/products/distribution) Python package manager installed, you can create a new env and install
 ```
-conda create -n bare3.8 python=3.8
+conda create -n bare3.8 python=3.8 numpy scipy
 conda activate bare3.8
-pip install numpy
-pip install scipy
 pip install -e .
 ```
 - NOTE 1: On my new M2 mac, with a new homebrew, homebrew installs to `/opt/homebrew` rather than `/usr/local`.  Therefore, in order to get `pip` to find the HDF5 installation (after `brew install hdf5`), I need to add `export HDF5_DIR=/opt/homebrew/opt/hdf5` to my `.bash_profile`, otherwise, `pip install tables` fails.

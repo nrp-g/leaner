@@ -29,6 +29,9 @@ class FitManager():
         self.args       = args
         if args.models:
             self.fit_params['models'] = args.models
+        if args.save_fits:
+            if not os.path.exists('pickled_fits'):
+                os.makedirs('pickled_fits')
 
 
     def plot_data(self):
@@ -113,7 +116,8 @@ class FitManager():
                                                     p0    = self.tmp_p0,
                                                     fcn   = self.tmp_model_fit.fit_func,
                                                     )
-                    gv.dump(self.fit_results[full_m], saved_fit, add_dependencies=True)
+                    if self.args.save_fits:
+                        gv.dump(self.fit_results[full_m], saved_fit, add_dependencies=True)
 
     def prior_width(self):
         self.prior_width_results = {}
@@ -155,7 +159,8 @@ class FitManager():
                                                         p0    = self.tmp_p0,
                                                         fcn   = self.tmp_model_fit.fit_func,
                                                         )
-                        gv.dump(self.prior_width_results[model_key], model_save, add_dependencies=True)
+                        if self.args.save_fits:
+                            gv.dump(self.prior_width_results[model_key], model_save, add_dependencies=True)
                     else:
                         print(model_key+' already exists - load fit')
                         self.prior_width_results[model_key] = gv.load(model_save)
