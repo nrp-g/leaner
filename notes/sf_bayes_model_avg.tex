@@ -26,7 +26,7 @@ This work was motivated by the INT Solar Fusion III Workshop, held in Berkeley, 
 We have performed a Bayes Model Averaging of the $D(p,\g)^3{\rm He}$ $S$-factor, also known as $S_{12}$, using polynomials to various orders as well as a modification of the phenomenological prediction from Refs.~\cite{Marcucci:2005zc,Marcucci:2015yla}.
 The analysis strategy follows Ref.~\cite{Moscoso:2021xog} very closely.
 What this work offers in addition is a Bayesian Model Averaging.
-All results presented here can be reproduced utilizing the Python software provided at \url{https://github.com/walkloud/solar_fusion_reactions}.
+All results presented here can be reproduced utilizing the Python software provided at \url{https://github.com/nrp-g/leaner}.
 
 
 
@@ -174,7 +174,7 @@ What this work adds in addition to Ref.~\cite{Moscoso:2021xog} is a Bayesian Mod
 Specifically, we consider the same $S_{pheno}$ function as above, but also a variant where the offset is not included.  We further consider polynomial descriptions of $\mathrm{O}(E^2)$ through $\mathrm{O}(E^5)$.
 By utilizing Bayes Theorem, we can construct a relative weight for each model, given the data.  In the absence of any prior information preferring one model over another, we can then perform a model averaging using the weights derived from Bayes Theorem.
 
-All results presented here can be reproduced by installing and running the code availabe at \url{https://github.com/walkloud/solar_fusion_reactions}.
+All results presented here can be reproduced by installing and running the code availabe at \url{https://github.com/nrp-g/leaner}.
 This is a lightweight Python package that can perform the analysis of $S_{12}$.  It was designed with the idea that, if useful, additional reactions could also be supported.
 
 
@@ -330,7 +330,7 @@ For each dataset, the fit function is multiplied by a log-normal normalization f
 The inverse, $1/f_d$, is a factor one would multiply the data by to bring it in line with the resulting fit function at the optimized values of the parameters.
 For each dataset, an unknown statistical extrinsic uncertainty $\s_d^{ext}$ is added, which is determined in the analysis.
 
-The analysis can be performed turning on and off many of these features using the fitting code \url{https://github.com/walkloud/solar_fusion_reactions}.
+The analysis can be performed turning on and off many of these features using the fitting code \url{https://github.com/nrp-g/leaner}.
 Here we present results for two fits as examples:
 \begin{verbatim}
     -----------------------------------------------------------

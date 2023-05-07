@@ -17,7 +17,7 @@ def main():
     parser.add_argument('--fit_params',     default='input/fit_params.py',
                         help=               'specify user input file [%(default)s]')
 
-    parser.add_argument('--d_file',         default='data/solar_fusion_reacions.h5',
+    parser.add_argument('--d_file',         default='data/solar_fusion_reactions.h5',
                         help=               'specify data file [%(default)s]')
     parser.add_argument('--d_sets',         nargs='+',
                         help=               'user can specify d_set list to override input file')

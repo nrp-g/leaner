@@ -1,6 +1,6 @@
 # Low Energy Analysis of NuclEar Reactions (LEANER)
 
-This Python package performs analysis of low-energy nuclear reactions, many of which are important for Solar Fusion, in particular, the associated S-factors.  The package enables the user to utilize (or add) various models for the S-factors and then will perform a Bayesian analysis of the models with the data.  The package will then perform a Bayes Model Averaging of the models utilizing the Bayes Factor as the relative weight of a model given the data.  The analysis closely follows that in Moscoso et al [arXiv:2109.00049](https://arxiv.org/abs/2109.00049), adding to that the Bayes Model Averaging.
+This Python package performs analysis of low-energy nuclear reactions, many of which are important for Solar Fusion, in particular, the associated S-factors.  The package enables the user to utilize (or add) various models for the S-factors and then will perform a Bayesian analysis of the models with the data.  The package will then perform a Bayes Model Averaging of the models utilizing the Bayes Factor as the relative weight of a model given the data.  The analysis closely follows that in Moscoso et al [arXiv:2109.00049](https://arxiv.org/abs/2109.00049) (and references within), adding to that the Bayes Model Averaging.
 
 Currently supported reactions
 - $D(p,\gamma)^3{\rm He}$ -- aka $S_{12}$
@@ -80,7 +80,7 @@ optional arguments:
                         specify SF reaction [S_12]
   --fit_params FIT_PARAMS
                         specify user input file [input/fit_params.py]
-  --d_file D_FILE       specify data file [data/solar_fusion_reacions.h5]
+  --d_file D_FILE       specify data file [data/solar_fusion_reactions.h5]
   --d_sets D_SETS [D_SETS ...]
                         user can specify d_set list to override input file
   --models MODELS [MODELS ...]
