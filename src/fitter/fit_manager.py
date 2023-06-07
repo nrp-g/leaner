@@ -29,18 +29,25 @@ class FitManager():
         self.args       = args
         if args.models:
             self.fit_params['models'] = args.models
+        self.fit_params['plot_params']['residuals'] = args.residuals
         if args.save_fits:
             if not os.path.exists('pickled_fits'):
                 os.makedirs('pickled_fits')
 
 
     def plot_data(self):
-        self.ax = plot.plot_data(self.x, self.y, self.fit_params['plot_params'])
+        if self.fit_params['plot_params']['residuals']:
+            self.ax, self.ax_resid = plot.plot_data(self.x, self.y, 
+                                                    self.fit_params['plot_params'],
+                                                    error=False, marker='s', label=False)
+        else:
+            self.ax = plot.plot_data(self.x, self.y, self.fit_params['plot_params'],
+                                     error=False, marker='s', label=False)
 
     def fit_extrinsic_sig_rel(self,z):
         ''' add an unknown statistical uncertainty to the data relative to the data.mean
 
-            new_y = y + y.mean * z_cutoff * arctan(z**2 / z_cutoff)
+            new_y = y + (0, y.mean * z_cutoff * arctan(z**2 / z_cutoff) )
 
             The parameter z will be optimized with lsqfit.empbayes_fit
         '''
@@ -76,6 +83,26 @@ class FitManager():
             'prior': self.tmp_p
         }
         return fit_dict
+
+    def extrinsic_sig(self, z, ext='rel'):
+        ''' add extra "unknown" statistical uncertainty to data
+            either as "relative"
+                dy = y.mean * z_cutoff * arctan(z**2 / z_cutoff)
+            or "absolute"
+                dy = z_cutoff * arctan(z**2 / z_cutoff)
+        '''
+        dy_ext = {}
+        z_cutoff = 1.
+        for k in z:
+            if ext == 'rel':
+                dy = z_cutoff * np.arctan(z[k]**2 / z_cutoff) * gv.mean(self.y[k])
+            elif ext == 'abs':
+                dy = z_cutoff * np.arctan(z[k]**2 / z_cutoff) * np.ones_like(self.y[k])
+            else:
+                sys.exit('I do not understand your choice of extrinsic uncertainty,', ext)
+            dy_ext[k] = gv.gvar(np.zeros_like(dy), dy)
+        
+        return dy_ext
 
     def fit_models(self):
         self.fit_results = {}
@@ -252,7 +279,7 @@ class FitManager():
                 print("%30s  %.1f  %.2e    %.4f  [%d]   %.2e" %(model, logGBF, w, chi2/dof, dof, Q))
         print('----------------------------------------------------------------------------------------------\n')
 
-    def model_avg_S(self,E,plot_hist=False):
+    def model_avg_S(self, E, print_result=True, plot_hist=False):
         self.get_weights()
         E_result = {}
         E_result['eval'] = np.array([E])
@@ -270,7 +297,12 @@ class FitManager():
             var      += self.weight[result] * t_m**2
         var += -np.array([k.mean**2 for k in mean])
         total_var = mean[0].var + var
-        print('S(E=%f) = %s +- %.1e' %(E,mean[0],np.sqrt(var)[0]))
+        self.model_var = var
+        self.mean_var  = mean[0].var
+
+        S_ma = gv.gvar(mean[0].mean, np.sqrt(total_var)[0])
+        if print_result:
+            print('S(E=%f) = %s +- %.1e' %(E,mean[0],np.sqrt(var)[0]))
 
         if plot_hist:
             pdf = 0.
@@ -308,6 +340,62 @@ class FitManager():
                 os.makedirs('figures')
             plt.savefig('figures/S_E%.4f_hist.pdf' %(E),transparent=True)
 
+        return S_ma
+
+    def ma_extrinsic(self):
+        self.dy_extrinsic_ma = gv.BufferDict()
+        for dset in self.x:
+            self.dy_extrinsic_ma[dset] = np.zeros_like(self.y[dset])
+            for model in self.fit_results:
+                ext = model.split('_')[-1]
+                dy = self.extrinsic_sig(self.fit_results[model].extrinsic_sig, ext=ext)
+                self.dy_extrinsic_ma[dset] += self.weight[model] * dy[dset]
+        self.y_extrinsic_ma = gv.BufferDict()
+        for k in self.y:
+            self.y_extrinsic_ma[k] = self.y[k] + self.dy_extrinsic_ma[k]
+
+    def ma_f_norm(self):
+        self.f_inv = gv.BufferDict()
+        for dset in self.x:
+            for model in self.fit_results:
+                if dset in self.f_inv:
+                    self.f_inv[dset] += self.weight[model] / self.fit_results[model].p['f_'+dset]
+                else:
+                    self.f_inv[dset]  = self.weight[model] / self.fit_results[model].p['f_'+dset]
+
+    def plot_shifted_y(self):
+        for dset in self.x:
+            x = self.x[dset]
+            clr = self.fit_params['plot_params']['colors'][dset]
+            lbl = dset.replace('_','\_')
+
+            extrinsic=True
+            if extrinsic and self.args.f_norm:
+                # full uncertainty
+                y_new = self.y_extrinsic_ma[dset] * self.f_inv[dset]
+                y_m = [k.mean for k in y_new]
+                y_s = [k.sdev for k in y_new]
+                self.ax.errorbar(x, y_m, yerr=y_s,
+                                 marker='None', c='k', alpha=0.5, linestyle='None')
+                
+                # only extrinsic uncertainty
+                y_new = self.y_extrinsic_ma[dset] * self.f_inv[dset].mean
+                y_m = [k.mean for k in y_new]
+                y_s = [k.sdev for k in y_new]
+                self.ax.errorbar(x, y_m, yerr=y_s,
+                                 marker='None', c='k', alpha=0.5, linestyle='None')
+                
+                # only original stoch uncertainty
+                y_new = self.y[dset] * self.f_inv[dset].mean
+                y_m = [k.mean for k in y_new]
+                y_s = [k.sdev for k in y_new]
+                self.ax.errorbar(x, y_m, yerr=y_s,
+                                 marker='o', c=clr, mfc='None', label=lbl, linestyle='None')
+        if 'legend_loc' in self.fit_params['plot_params']:
+            self.ax.legend(loc=self.fit_params['plot_params']['legend_loc'])
+        else:
+            self.ax.legend()
+
     def plot_fit(self):
         self.do_model_avg()
         yy   = np.array([k.mean for k in self.model_avg])
@@ -315,6 +403,68 @@ class FitManager():
         var += self.model_var
         dy   = np.sqrt(var)
         self.ax.fill_between(self.x_plot['plot'], yy-dy, yy+dy, color='k', alpha=.3)
+
+        if self.fit_params['plot_params']['residuals']:
+            # mean.var + model_var
+            var = self.model_var + self.mean_var
+            dy  = np.sqrt(var) #''' divide by mean '''
+            self.ax_resid.fill_between(self.x_plot['plot'], -dy, dy, color='k', alpha=.2)
+            # mean.var
+            var = self.mean_var
+            dy  = np.sqrt(var)
+            self.ax_resid.fill_between(self.x_plot['plot'], -dy, dy, color='k', alpha=.4)
+
+            # subtract data from fit
+            plot_params = self.fit_params['plot_params']
+
+            # plot shifted data
+            # determine data with extrinsic uncertainty
+            if any([k in ['abs','rel'] for k in self.args.extrinsic]):
+                extrinsic = True
+                self.ma_extrinsic()
+            else:
+                extrinsic = False
+            # determine model avg normalization
+            if self.args.f_norm:
+                self.ma_f_norm()
+
+            for dset in self.x:
+                x = self.x[dset]
+                clr  = plot_params['colors'][dset]
+                for i_e, E in enumerate(x):
+                    y_ma = self.model_avg_S(E, print_result=False)
+
+                    dy = (self.y[dset][i_e] - y_ma ) / y_ma
+                    if not (extrinsic or self.args.f_norm):
+                        self.ax_resid.errorbar(E, dy.mean, yerr=dy.sdev,
+                                               marker='o', c=clr, mfc='None')
+                    else:
+                        # plot original data without error bar
+                        self.ax_resid.plot(E, dy.mean, alpha=0.4,
+                                           marker='s', c=clr, mfc='None')
+                        # if we have extrinsic and f_norm
+                        if extrinsic and self.args.f_norm:
+                            # full uncertainty
+                            y_new = self.y_extrinsic_ma[dset][i_e] * self.f_inv[dset]
+                            dy = (y_new - y_ma) / y_ma
+                            self.ax_resid.errorbar(E, dy.mean, yerr=dy.sdev,
+                                                   marker='None', c='k', alpha=0.5)
+                            # only extrinsic uncertainty
+                            y_new = self.y_extrinsic_ma[dset][i_e] * self.f_inv[dset].mean
+                            dy = (y_new - y_ma) / y_ma
+                            self.ax_resid.errorbar(E, dy.mean, yerr=dy.sdev,
+                                                   marker='None', c='k', alpha=0.5)
+                            # only original stoch uncertainty
+                            y_new = self.y[dset][i_e] * self.f_inv[dset]
+                            dy = (y_new - y_ma) / y_ma
+                            self.ax_resid.errorbar(E, dy.mean, yerr=dy.sdev,
+                                                   marker='o', c=clr, mfc='None')
+
+                    self.ax_resid.set_xlim(plot_params['x_lim'])
+                    self.ax_resid.set_ylim(-0.65, 1.05)
+                    self.ax_resid.set_xscale(plot_params['x_scale'])
+                    self.ax_resid.set_xlabel(plot_params['x_label'], fontsize=16)
+                    self.ax_resid.set_ylabel(r'$\Delta S/S$', fontsize=16)
 
     def report_fits(self):
         for model in self.fit_results:

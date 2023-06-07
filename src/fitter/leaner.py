@@ -51,6 +51,8 @@ def main():
 
     parser.add_argument('--show_plot',      default=True, action='store_false',
                         help=               'show plots? [%(default)s]')
+    parser.add_argument('--residuals',      default=True, action='store_false',
+                        help=               'show residual fit - data? [%(default)s]')
 
     parser.add_argument('--interact',       default=False, action='store_true',
                         help=               'open IPython instance after to interact with results? [%(default)s]')
@@ -89,19 +91,19 @@ def main():
         if args.report_models:
             sf_fit.report_models()
 
-        sf_fit.model_avg_S(0.0,   plot_hist=True)
-        sf_fit.model_avg_S(0.091, plot_hist=True)
+        tmp = sf_fit.model_avg_S(0.0,   plot_hist=True)
+        tmp = sf_fit.model_avg_S(0.091, plot_hist=True)
 
         # plot data
         if args.show_plot:
             sf_fit.plot_data()
             sf_fit.plot_fit()
+            if args.f_norm and any([k in ['abs','rel'] for k in args.extrinsic]):
+                sf_fit.plot_shifted_y()
 
             if not os.path.exists('figures'):
                 os.makedirs('figures')
             plt.savefig('figures/S_model_avg.pdf', transparent=True)
-
-            #sf_fit.plot_pdf()
 
     if args.show_plot:
         plt.ioff()
