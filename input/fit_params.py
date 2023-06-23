@@ -13,8 +13,8 @@ fit_params = {
             'x_label'   :'Energy (MeV)',
             'y_label'   :'S factor (MeV b)',
             'text'      :r'D(p,$\gamma$)$^3$He',
-            'text_loc'  :[0.1,0.6],
-            'legend_loc':4,
+            'text_loc'  :[0.7,0.2],
+            'legend_loc':2,
             'colors'    :{
                 'Casella_2002':'blueviolet',
                 'Ma_1997'     :'saddlebrown',
