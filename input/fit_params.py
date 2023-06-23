@@ -11,7 +11,7 @@ fit_params = {
             'x_scale'   :'log',
             'y_scale'   :'log',
             'x_label'   :'Energy (MeV)',
-            'y_label'   :'S-factor (MeV b)',
+            'y_label'   :'S factor (MeV b)',
             'text'      :r'D(p,$\gamma$)$^3$He',
             'text_loc'  :[0.1,0.6],
             'legend_loc':4,
