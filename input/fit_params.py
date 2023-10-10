@@ -11,7 +11,7 @@ fit_params = {
             'x_scale'   :'log',
             'y_scale'   :'log',
             'x_label'   :'Energy (MeV)',
-            'y_label'   :'S-factor (MeV b)',
+            'y_label'   :'S factor (MeV b)',
             'text'      :r'D(p,$\gamma$)$^3$He',
             'text_loc'  :[0.1,0.6],
             'legend_loc':4,
@@ -25,7 +25,7 @@ fit_params = {
                 'Warren_1963' :'g',
             },
         },
-        'models':['pheno', 'pheno_offest', 'poly_2', 'poly_3', 'poly_4', 'poly_5'],
+        'models':['pheno', 'pheno_offset', 'poly_2', 'poly_3', 'poly_4', 'poly_5'],
         'priors':gv.BufferDict({
             'S_0':gv.gvar(2e-7,1e-7),
             'S_1':gv.gvar(0, 1e-5),
