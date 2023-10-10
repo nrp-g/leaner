@@ -37,9 +37,9 @@ class FitManager():
 
     def plot_data(self):
         if self.fit_params['plot_params']['residuals']:
-            self.ax, self.ax_resid = plot.plot_data(self.x, self.y, 
-                                                    self.fit_params['plot_params'],
-                                                    error=False, marker='s', label=False)
+            self.ax, self.ax_resid, self.ax_shift, self.ax_resid_shift =\
+                plot.plot_data(self.x, self.y, self.fit_params['plot_params'],
+                               error=True, marker='o', label=True, alpha=0.5)
         else:
             self.ax = plot.plot_data(self.x, self.y, self.fit_params['plot_params'],
                                      error=False, marker='s', label=False)
@@ -375,9 +375,10 @@ class FitManager():
                 y_new = self.y_extrinsic_ma[dset] * self.f_inv[dset]
                 y_m = [k.mean for k in y_new]
                 y_s = [k.sdev for k in y_new]
-                self.ax.errorbar(x, y_m, yerr=y_s,
-                                 marker='None', c='k', alpha=0.5, linestyle='None')
+                self.ax_shift.errorbar(x, y_m, yerr=y_s,
+                                 marker='s', mfc='None', c=clr, alpha=0.5, linestyle='None')
                 
+                '''
                 # only extrinsic uncertainty
                 y_new = self.y_extrinsic_ma[dset] * self.f_inv[dset].mean
                 y_m = [k.mean for k in y_new]
@@ -391,6 +392,7 @@ class FitManager():
                 y_s = [k.sdev for k in y_new]
                 self.ax.errorbar(x, y_m, yerr=y_s,
                                  marker='o', c=clr, mfc='None', label=lbl, linestyle='None')
+                '''
         if 'legend_loc' in self.fit_params['plot_params']:
             self.ax.legend(loc=self.fit_params['plot_params']['legend_loc'])
         else:
@@ -403,6 +405,7 @@ class FitManager():
         var += self.model_var
         dy   = np.sqrt(var)
         self.ax.fill_between(self.x_plot['plot'], yy-dy, yy+dy, color='k', alpha=.3)
+        self.ax_shift.fill_between(self.x_plot['plot'], yy-dy, yy+dy, color='k', alpha=.3)
 
         if self.fit_params['plot_params']['residuals']:
             # mean.var + model_var
@@ -413,6 +416,7 @@ class FitManager():
             var = self.mean_var
             dy  = np.sqrt(var)
             self.ax_resid.fill_between(self.x_plot['plot'], -dy, dy, color='k', alpha=.4)
+            self.ax_resid_shift.fill_between(self.x_plot['plot'], -dy, dy, color='k', alpha=.4)
 
             # subtract data from fit
             plot_params = self.fit_params['plot_params']
@@ -439,16 +443,22 @@ class FitManager():
                         self.ax_resid.errorbar(E, dy.mean, yerr=dy.sdev,
                                                marker='o', c=clr, mfc='None')
                     else:
+                        # plot original data on left
+                        self.ax_resid.errorbar(E, dy.mean, yerr=dy.sdev,
+                                               marker='o', c=clr, mfc='None')
+
                         # plot original data without error bar
-                        self.ax_resid.plot(E, dy.mean, alpha=0.4,
-                                           marker='s', c=clr, mfc='None')
+                        #self.ax_resid.plot(E, dy.mean, alpha=0.4,
+                        #                   marker='s', c=clr, mfc='None')
+
                         # if we have extrinsic and f_norm
                         if extrinsic and self.args.f_norm:
                             # full uncertainty
                             y_new = self.y_extrinsic_ma[dset][i_e] * self.f_inv[dset]
                             dy = (y_new - y_ma) / y_ma
-                            self.ax_resid.errorbar(E, dy.mean, yerr=dy.sdev,
-                                                   marker='None', c='k', alpha=0.5)
+                            self.ax_resid_shift.errorbar(E, dy.mean, yerr=dy.sdev,
+                                                   marker='s', mfc='None', c=clr, alpha=0.5)
+                            '''
                             # only extrinsic uncertainty
                             y_new = self.y_extrinsic_ma[dset][i_e] * self.f_inv[dset].mean
                             dy = (y_new - y_ma) / y_ma
@@ -459,12 +469,19 @@ class FitManager():
                             dy = (y_new - y_ma) / y_ma
                             self.ax_resid.errorbar(E, dy.mean, yerr=dy.sdev,
                                                    marker='o', c=clr, mfc='None')
+                            '''
 
                     self.ax_resid.set_xlim(plot_params['x_lim'])
                     self.ax_resid.set_ylim(-0.65, 1.05)
                     self.ax_resid.set_xscale(plot_params['x_scale'])
-                    self.ax_resid.set_xlabel(plot_params['x_label'], fontsize=16)
-                    self.ax_resid.set_ylabel(r'$\Delta S/S$', fontsize=16)
+                    self.ax_resid.set_xlabel(plot_params['x_label'], fontsize=12)
+                    self.ax_resid.set_ylabel(r'$\Delta S/S$', fontsize=12)
+
+                    self.ax_resid_shift.set_xlim(plot_params['x_lim'])
+                    self.ax_resid_shift.set_ylim(-0.65, 1.05)
+                    self.ax_resid_shift.set_xscale(plot_params['x_scale'])
+                    self.ax_resid_shift.set_xlabel(plot_params['x_label'], fontsize=12)
+
 
     def report_fits(self):
         for model in self.fit_results:
