@@ -36,13 +36,14 @@ class FitManager():
 
 
     def plot_data(self):
+        marker = 'markers' in self.fit_params['plot_params']
         if self.fit_params['plot_params']['residuals']:
             self.ax, self.ax_resid, self.ax_shift, self.ax_resid_shift =\
                 plot.plot_data(self.x, self.y, self.fit_params['plot_params'],
-                               error=True, marker='o', label=True, alpha=0.5)
+                               error=True, marker=marker, label=True, alpha=0.5)
         else:
             self.ax = plot.plot_data(self.x, self.y, self.fit_params['plot_params'],
-                                     error=False, marker='s', label=False)
+                                     error=False, marker=marker, label=False)
 
     def fit_extrinsic_sig_rel(self,z):
         ''' add an unknown statistical uncertainty to the data relative to the data.mean
@@ -365,6 +366,10 @@ class FitManager():
 
     def plot_shifted_y(self):
         for dset in self.x:
+            if 'markers' in self.fit_params['plot_params']:
+                marker = self.fit_params['plot_params']['markers'][dset]
+            else:
+                marker = 's'
             x = self.x[dset]
             clr = self.fit_params['plot_params']['colors'][dset]
             lbl = dset.replace('_','\_')
@@ -376,7 +381,7 @@ class FitManager():
                 y_m = [k.mean for k in y_new]
                 y_s = [k.sdev for k in y_new]
                 self.ax_shift.errorbar(x, y_m, yerr=y_s,
-                                 marker='s', mfc='None', c=clr, alpha=0.5, linestyle='None')
+                                 marker=marker, mfc='None', c=clr, alpha=0.5, linestyle='None')
                 
                 '''
                 # only extrinsic uncertainty
@@ -454,10 +459,14 @@ class FitManager():
                         # if we have extrinsic and f_norm
                         if extrinsic and self.args.f_norm:
                             # full uncertainty
+                            if 'markers' in self.fit_params['plot_params']:
+                                marker = self.fit_params['plot_params']['markers'][dset]
+                            else:
+                                marker = 's'
                             y_new = self.y_extrinsic_ma[dset][i_e] * self.f_inv[dset]
                             dy = (y_new - y_ma) / y_ma
                             self.ax_resid_shift.errorbar(E, dy.mean, yerr=dy.sdev,
-                                                   marker='s', mfc='None', c=clr, alpha=0.5)
+                                                   marker=marker, mfc='None', c=clr, alpha=0.5)
                             '''
                             # only extrinsic uncertainty
                             y_new = self.y_extrinsic_ma[dset][i_e] * self.f_inv[dset].mean

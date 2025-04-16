@@ -24,6 +24,15 @@ fit_params = {
                 'Turkat_2021' :'silver',
                 'Warren_1963' :'g',
             },
+            'markers'    :{
+                'Casella_2002':'o',
+                'Ma_1997'     :'s',
+                'Mossa_2020'  :'D',
+                'Schmid_1997' :'p',
+                'Tisma_2019'  :'H',
+                'Turkat_2021' :'*',
+                'Warren_1963' :'d',
+            },
         },
         'models':['pheno', 'pheno_offset', 'poly_2', 'poly_3', 'poly_4', 'poly_5'],
         'priors':gv.BufferDict({

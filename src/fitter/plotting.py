@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 
-def plot_data(x,y, plot_params, marker='o', color=True, label=True, error=True, alpha=0.4):
+def plot_data(x,y, plot_params, marker=True, color=True, label=True, error=True, alpha=0.4):
     if plot_params['residuals']:
         plt.figure(figsize=(6.5,4))
         ax = plt.axes([0.11,0.3,0.44,0.68])
@@ -19,16 +19,20 @@ def plot_data(x,y, plot_params, marker='o', color=True, label=True, error=True, 
             clr = plot_params['colors'][dset]
         else:
             clr = 'k'
+        if marker:
+            mkr = plot_params['markers'][dset]
+        else:
+            mkr = 'o'
         if label:
             lbl = dset.replace('_','\_')
         else:
             lbl = ''
         if error:
             ax.errorbar(x[dset], y_m, yerr=y_s, alpha=alpha,
-                        marker=marker, c=clr, mfc='None', linestyle='None', label=lbl)
+                        marker=mkr, c=clr, mfc='None', linestyle='None', label=lbl)
         else:
             ax.plot(x[dset], y_m, alpha=alpha,
-                    marker=marker, c=clr, mfc='None', linestyle='None', label=lbl)
+                    marker=mkr, c=clr, mfc='None', linestyle='None', label=lbl)
 
     ax.set_xlim(plot_params['x_lim'])
     ax.set_ylim(plot_params['y_lim'])
