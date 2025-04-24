@@ -37,6 +37,7 @@ class FitManager():
 
     def plot_data(self):
         marker = 'markers' in self.fit_params['plot_params']
+
         if self.fit_params['plot_params']['residuals']:
             self.ax, self.ax_resid, self.ax_shift, self.ax_resid_shift =\
                 plot.plot_data(self.x, self.y, self.fit_params['plot_params'],
@@ -440,17 +441,22 @@ class FitManager():
             for dset in self.x:
                 x = self.x[dset]
                 clr  = plot_params['colors'][dset]
+                if 'markers' in self.fit_params['plot_params']:
+                    marker = self.fit_params['plot_params']['markers'][dset]
+                else:
+                    marker = 's'
+
                 for i_e, E in enumerate(x):
                     y_ma = self.model_avg_S(E, print_result=False)
 
                     dy = (self.y[dset][i_e] - y_ma ) / y_ma
                     if not (extrinsic or self.args.f_norm):
                         self.ax_resid.errorbar(E, dy.mean, yerr=dy.sdev,
-                                               marker='o', c=clr, mfc='None')
+                                               marker=marker, c=clr, mfc='None')
                     else:
                         # plot original data on left
                         self.ax_resid.errorbar(E, dy.mean, yerr=dy.sdev,
-                                               marker='o', c=clr, mfc='None')
+                                               marker=marker, c=clr, mfc='None')
 
                         # plot original data without error bar
                         #self.ax_resid.plot(E, dy.mean, alpha=0.4,
